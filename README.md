@@ -2,76 +2,76 @@
 
 ## Description
 
-SQLiteZSTD provides a tool to access SQLite databases that have been compressed
-with
+SQLiteZSTD provides a tool for accessing SQLite databases compressed with
 [Zstandard seekable (zstd)](https://github.com/facebook/zstd/blob/216099a73f6ec19c246019df12a2877dada45cca/contrib/seekable_format/zstd_seekable_compression_format.md)
-in a Read-Only manner. Its functionality is based on
+in a read-only manner. Its functionality is based on the
 [SQLite3 Virtual File System (VFS) in Go](https://github.com/psanford/sqlite3vfs).
 
-Please note, SQLiteZSTD is specifically designed for reading data; **it does not
+Please note, SQLiteZSTD is specifically designed for reading data and **does not
 support write operations**.
 
 ## Features
 
-1. Read-only access to Zstd compressed SQLite databases.
+1. Read-only access to Zstd-compressed SQLite databases.
 2. Interface through SQLite3 VFS.
-3. Compressed database is seekable facilitating ease of access.
+3. The compressed database is seekable, facilitating ease of access.
 
 ## Usage
 
-Your database needs to be compressed in the seekable format for zstd. I
-recommend using this [CLI](github.com/SaveTheRbtz/zstd-seekable-format-go):
+Your database needs to be compressed in the seekable Zstd format. I recommend
+using this [CLI tool](github.com/SaveTheRbtz/zstd-seekable-format-go):
 
 ```bash
 go get -a github.com/SaveTheRbtz/zstd-seekable-format-go/...
 go run github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek \
-	-f <dbPath> \
-	-o <dbPath>.zst
+    -f <dbPath> \
+    -o <dbPath>.zst
 ```
 
-The CLI provided different options for levels of compression. I have no
-recommendations on best usage patterns.
+The CLI provides different options for compression levels, but I do not have
+specific recommendations for best usage patterns.
 
 Below is an example of how to use SQLiteZSTD in a Go program:
 
 ```go
 import (
-	sqlitezstd "github.com/jtarchie/sqlitezstd"
+    sqlitezstd "github.com/jtarchie/sqlitezstd"
 )
 
 initErr := sqlitezstd.Init()
 if initErr != nil {
-	panic(fmt.Sprintf("Failed to initialize SQLiteZSTD: %s", initErr))
+    panic(fmt.Sprintf("Failed to initialize SQLiteZSTD: %s", initErr))
 }
 
 db, err := sql.Open("sqlite3", "<path-to-your-file>?vfs=zstd&mode=ro&immutable=true&synchronous=off")
 if err != nil {
-	panic(fmt.Sprintf("Failed to open database: %s", err))
+    panic(fmt.Sprintf("Failed to open database: %s", err))
 }
 ```
 
 In this Go code example:
 
-1. The SQLiteZSTD library is initialized first with `sqlitezstd.Init()`.
-2. An SQL connection to a compressed SQLite database is then established with
-   `sql.Open()`.
+- The SQLiteZSTD library is initialized first with sqlitezstd.Init().
+- An SQL connection to a compressed SQLite database is established with
+  sql.Open().
 
-The `sql.Open()` function takes as a parameter the path to the compressed SQLite
+The sql.Open() function takes as a parameter the path to the compressed SQLite
 database, appended with a query string. Key query string parameters include:
 
-- `vfs=zstd`: ensures the ZSTD VFS is used.
-- `mode=ro`: opens the database in read-only mode.
-- `immutable=true`: ensures the database is protected from any accidental write
+- `vfs=zstd`: Ensures the ZSTD VFS is used.
+- `mode=ro`: Opens the database in read-only mode.
+- `immutable=true`: Ensures the database is protected from any accidental write
   operations.
-- `synchronous=off`: disables SQLite's disk synchronization for improved
+- `synchronous=off`: Disables SQLite's disk synchronization for improved
   performance on read-heavy operations.
 
 ## Performance
 
-I've got a simple benchmark. It inserts 10k records, looks for the `MAX` value,
-with no index.
+Here's a simple benchmark comparing performance between reading from an
+uncompressed vs. a compressed SQLite database, involving the insertion of 10k
+records and retrieval of the MAX value, without an index.
 
 ```
-BenchmarkReadUncompressedSQLite-8           5845            206346 ns/op
-BenchmarkReadCompressedSQLite-8             5376            207876 ns/op
+BenchmarkReadUncompressedSQLite-8           5301            214922 ns/op
+BenchmarkReadCompressedSQLite-8             5524            216015 ns/op
 ```

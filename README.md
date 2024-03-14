@@ -65,3 +65,13 @@ database, appended with a query string. Key query string parameters include:
   operations.
 - `synchronous=off`: disables SQLite's disk synchronization for improved
   performance on read-heavy operations.
+
+## Performance
+
+I've got a simple benchmark. It inserts 10k records, looks for the `MAX` value,
+with no index.
+
+```
+BenchmarkReadUncompressedSQLite-8           5845            206346 ns/op
+BenchmarkReadCompressedSQLite-8             5376            207876 ns/op
+```

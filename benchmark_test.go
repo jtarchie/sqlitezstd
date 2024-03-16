@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -108,6 +110,33 @@ func BenchmarkReadCompressedSQLite(b *testing.B) {
 	client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
 	if err != nil {
 		b.Fatalf("Failed to open database: %v", err)
+	}
+	defer client.Close()
+
+	b.ResetTimer() // Start timing now.
+
+	for i := 0; i < b.N; i++ {
+		var count int
+
+		err = client.QueryRow("SELECT MAX(value) FROM entries").Scan(&count)
+		if err != nil {
+			b.Fatalf("Query failed: %v", err)
+		}
+	}
+}
+
+func BenchmarkReadCompressedHTTPSQLite(b *testing.B) {
+	_, zstPath, cleanup := setupDB(b)
+	defer cleanup()
+
+	zstDir := filepath.Dir(zstPath)
+
+	server := httptest.NewServer(http.FileServer(http.Dir(zstDir)))
+	defer server.Close()
+
+	client, err := sql.Open("sqlite3", fmt.Sprintf("%s/%s?vfs=zstd", server.URL, filepath.Base(zstPath)))
+	if err != nil {
+		b.Fatalf("Query failed: %v", err)
 	}
 	defer client.Close()
 

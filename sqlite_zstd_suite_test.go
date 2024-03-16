@@ -3,6 +3,8 @@ package sqlitezstd_test
 import (
 	"database/sql"
 	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -113,5 +115,24 @@ var _ = Describe("SqliteZSTD", func() {
 			row := client.QueryRow("SELECT * FROM entries ORDER BY RANDOM() LIMIT 1;")
 			Expect(row.Err()).To(HaveOccurred())
 		})
+	})
+
+	It("does something", func() {
+		zstPath := createDatabase()
+		zstDir := filepath.Dir(zstPath)
+		server := httptest.NewServer(http.FileServer(http.Dir(zstDir)))
+		defer server.Close()
+
+		client, err := sql.Open("sqlite3", fmt.Sprintf("%s/%s?vfs=zstd", server.URL, filepath.Base(zstPath)))
+		Expect(err).ToNot(HaveOccurred())
+		defer client.Close()
+
+		row := client.QueryRow("SELECT COUNT(*) FROM entries;")
+		Expect(row.Err()).ToNot(HaveOccurred())
+
+		var count int64
+		err = row.Scan(&count)
+		Expect(err).ToNot(HaveOccurred())
+		Expect(count).To(BeEquivalentTo(1000))
 	})
 })

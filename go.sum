@@ -61,3 +61,5 @@ gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8
 gopkg.in/yaml.v3 v3.0.0-20200313102051-9f266ea9e77c/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
 gopkg.in/yaml.v3 v3.0.1 h1:fxVm/GzAzEWqLHuvctI91KS9hhNmmWOoWu0XTYJS7CA=
 gopkg.in/yaml.v3 v3.0.1/go.mod h1:K4uyk7z7BCEPqu6E+C64Yfv1cQ7kz7rIZviUmN+EgEM=
+howett.net/ranger v0.0.0-20171016084633-e2e137620847 h1:jHX+2Sv8rQNb1nG2G9pcQLdVoWXBLW5fcd2gnfHluCU=
+howett.net/ranger v0.0.0-20171016084633-e2e137620847/go.mod h1:ZWGIG4mR6Ck+CdmFqK2/jox5vO2OAS8Qpb33HB8z0og=

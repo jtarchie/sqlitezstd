@@ -2,7 +2,6 @@ package sqlitezstd
 
 import (
 	"io"
-	"os"
 
 	seekable "github.com/SaveTheRbtz/zstd-seekable-format-go"
 	"github.com/klauspost/compress/zstd"
@@ -11,7 +10,7 @@ import (
 
 type ZstdFile struct {
 	decoder  *zstd.Decoder
-	file     *os.File
+	closer   io.Closer
 	seekable seekable.Reader
 }
 
@@ -23,7 +22,7 @@ func (z *ZstdFile) CheckReservedLock() (bool, error) {
 
 func (z *ZstdFile) Close() error {
 	_ = z.seekable.Close()
-	_ = z.file.Close()
+	_ = z.closer.Close()
 
 	return nil
 }

@@ -9,6 +9,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.16.0
 	github.com/onsi/gomega v1.31.1
 	github.com/psanford/sqlite3vfs v0.0.0-20231201192653-4c99abef8114
+	howett.net/ranger v0.0.0-20171016084633-e2e137620847
 )
 
 require (

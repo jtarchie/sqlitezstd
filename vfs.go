@@ -2,6 +2,8 @@ package sqlitezstd
 
 import (
 	"fmt"
+	"io"
+	"net/url"
 	"os"
 	"strings"
 
@@ -9,6 +11,7 @@ import (
 	"github.com/klauspost/compress/zstd"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/psanford/sqlite3vfs"
+	"howett.net/ranger"
 )
 
 type ZstdVFS struct{}
@@ -32,9 +35,32 @@ func (z *ZstdVFS) FullPathname(name string) string {
 }
 
 func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File, sqlite3vfs.OpenFlag, error) {
-	file, err := os.Open(name)
-	if err != nil {
-		return nil, 0, sqlite3vfs.CantOpenError
+	var (
+		err    error
+		reader io.ReadSeeker
+		closer io.Closer
+	)
+
+	if strings.HasPrefix(name, "http://") || strings.HasPrefix(name, "https://") {
+		uri, err := url.Parse(name)
+		if err != nil {
+			return nil, 0, sqlite3vfs.CantOpenError
+		}
+
+		reader, err = ranger.NewReader(&ranger.HTTPRanger{URL: uri})
+		if err != nil {
+			return nil, 0, sqlite3vfs.CantOpenError
+		}
+
+		closer = io.NopCloser(reader)
+	} else {
+		reader, err = os.Open(name)
+		if err != nil {
+			return nil, 0, sqlite3vfs.CantOpenError
+		}
+
+		//nolint: forcetypeassert
+		closer = reader.(io.Closer)
 	}
 
 	decoder, err := zstd.NewReader(nil)
@@ -42,14 +68,14 @@ func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File,
 		return nil, 0, sqlite3vfs.CantOpenError
 	}
 
-	seekable, err := seekable.NewReader(file, decoder)
+	seekable, err := seekable.NewReader(reader, decoder)
 	if err != nil {
 		return nil, 0, sqlite3vfs.CantOpenError
 	}
 
 	return &ZstdFile{
 		decoder:  decoder,
-		file:     file,
+		closer:   closer,
 		seekable: seekable,
 	}, flags | sqlite3vfs.OpenReadOnly, nil
 }

@@ -2,7 +2,6 @@ package sqlitezstd
 
 import (
 	"fmt"
-	"io"
 	"os"
 	"strings"
 
@@ -48,18 +47,10 @@ func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File,
 		return nil, 0, fmt.Errorf("could not create seekable: %w", err)
 	}
 
-	size, err := seekable.Seek(-1, io.SeekEnd)
-	if err != nil {
-		return nil, 0, fmt.Errorf("could not find size of db file: %w", err)
-	}
-
-	_, _ = seekable.Seek(0, io.SeekStart)
-
 	return &ZstdFile{
 		decoder:  decoder,
 		file:     file,
 		seekable: seekable,
-		size:     size,
 	}, flags | sqlite3vfs.OpenReadOnly, nil
 }
 

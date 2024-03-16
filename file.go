@@ -1,6 +1,7 @@
 package sqlitezstd
 
 import (
+	"io"
 	"os"
 
 	seekable "github.com/SaveTheRbtz/zstd-seekable-format-go"
@@ -12,8 +13,6 @@ type ZstdFile struct {
 	decoder  *zstd.Decoder
 	file     *os.File
 	seekable seekable.Reader
-
-	size int64
 }
 
 var _ sqlite3vfs.File = &ZstdFile{}
@@ -34,7 +33,7 @@ func (z *ZstdFile) DeviceCharacteristics() sqlite3vfs.DeviceCharacteristic {
 }
 
 func (z *ZstdFile) FileSize() (int64, error) {
-	return z.size, nil
+	return z.seekable.Seek(0, io.SeekEnd)
 }
 
 func (z *ZstdFile) Lock(elock sqlite3vfs.LockType) error {

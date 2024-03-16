@@ -10,7 +10,7 @@ import (
 
 type ZstdFile struct {
 	decoder  *zstd.Decoder
-	closer   io.Closer
+	reader   io.ReadSeeker
 	seekable seekable.Reader
 }
 
@@ -22,7 +22,10 @@ func (z *ZstdFile) CheckReservedLock() (bool, error) {
 
 func (z *ZstdFile) Close() error {
 	_ = z.seekable.Close()
-	_ = z.closer.Close()
+
+	if closer, ok := z.reader.(io.Closer); ok {
+		_ = closer.Close()
+	}
 
 	return nil
 }

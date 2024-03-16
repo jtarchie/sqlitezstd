@@ -6,7 +6,7 @@ tasks:
     - deno fmt README.md
     - gofmt -w .
   lint: golangci-lint run --fix --timeout "10m"
-  test: go test -bench . -race
+  test: go test -bench=. -benchmem -race
   default:
     cmds:
     - task: format

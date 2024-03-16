@@ -117,7 +117,7 @@ var _ = Describe("SqliteZSTD", func() {
 		})
 	})
 
-	It("does something", func() {
+	It("allows reading from HTTP server", func() {
 		zstPath := createDatabase()
 		zstDir := filepath.Dir(zstPath)
 		server := httptest.NewServer(http.FileServer(http.Dir(zstDir)))

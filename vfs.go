@@ -38,7 +38,6 @@ func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File,
 	var (
 		err    error
 		reader io.ReadSeeker
-		closer io.Closer
 	)
 
 	if strings.HasPrefix(name, "http://") || strings.HasPrefix(name, "https://") {
@@ -51,16 +50,11 @@ func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File,
 		if err != nil {
 			return nil, 0, sqlite3vfs.CantOpenError
 		}
-
-		closer = io.NopCloser(reader)
 	} else {
 		reader, err = os.Open(name)
 		if err != nil {
 			return nil, 0, sqlite3vfs.CantOpenError
 		}
-
-		//nolint: forcetypeassert
-		closer = reader.(io.Closer)
 	}
 
 	decoder, err := zstd.NewReader(nil)
@@ -75,7 +69,7 @@ func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File,
 
 	return &ZstdFile{
 		decoder:  decoder,
-		closer:   closer,
+		reader:   reader,
 		seekable: seekable,
 	}, flags | sqlite3vfs.OpenReadOnly, nil
 }

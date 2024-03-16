@@ -34,17 +34,17 @@ func (z *ZstdVFS) FullPathname(name string) string {
 func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File, sqlite3vfs.OpenFlag, error) {
 	file, err := os.Open(name)
 	if err != nil {
-		return nil, 0, fmt.Errorf("could not open file: %w", err)
+		return nil, 0, sqlite3vfs.CantOpenError
 	}
 
 	decoder, err := zstd.NewReader(nil)
 	if err != nil {
-		return nil, 0, fmt.Errorf("could not create reader: %w", err)
+		return nil, 0, sqlite3vfs.CantOpenError
 	}
 
 	seekable, err := seekable.NewReader(file, decoder)
 	if err != nil {
-		return nil, 0, fmt.Errorf("could not create seekable: %w", err)
+		return nil, 0, sqlite3vfs.CantOpenError
 	}
 
 	return &ZstdFile{

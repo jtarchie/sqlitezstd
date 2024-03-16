@@ -13,6 +13,7 @@ linters:
 
   - wrapcheck
   - ireturn
+  - forbidigo
 
   # linters deprecated
   - deadcode

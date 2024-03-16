@@ -103,4 +103,15 @@ var _ = Describe("SqliteZSTD", func() {
 
 		waiter.Wait()
 	})
+
+	When("file does not exist", func() {
+		It("returns an error", func() {
+			client, err := sql.Open("sqlite3", "file:some.db?vfs=zstd")
+			Expect(err).ToNot(HaveOccurred())
+			defer client.Close()
+
+			row := client.QueryRow("SELECT * FROM entries ORDER BY RANDOM() LIMIT 1;")
+			Expect(row.Err()).To(HaveOccurred())
+		})
+	})
 })

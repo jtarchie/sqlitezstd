@@ -2,7 +2,6 @@ package sqlitezstd
 
 import (
 	"os"
-	"sync/atomic"
 
 	seekable "github.com/SaveTheRbtz/zstd-seekable-format-go"
 	"github.com/klauspost/compress/zstd"
@@ -14,16 +13,13 @@ type ZstdFile struct {
 	file     *os.File
 	seekable seekable.Reader
 
-	count int64
-	size  int64
+	size int64
 }
 
 var _ sqlite3vfs.File = &ZstdFile{}
 
 func (z *ZstdFile) CheckReservedLock() (bool, error) {
-	count := atomic.LoadInt64(&z.count)
-
-	return count > 0, nil
+	return false, nil
 }
 
 func (z *ZstdFile) Close() error {
@@ -34,7 +30,7 @@ func (z *ZstdFile) Close() error {
 }
 
 func (z *ZstdFile) DeviceCharacteristics() sqlite3vfs.DeviceCharacteristic {
-	return 0
+	return sqlite3vfs.IocapImmutable
 }
 
 func (z *ZstdFile) FileSize() (int64, error) {
@@ -42,12 +38,6 @@ func (z *ZstdFile) FileSize() (int64, error) {
 }
 
 func (z *ZstdFile) Lock(elock sqlite3vfs.LockType) error {
-	if elock == sqlite3vfs.LockNone {
-		return nil
-	}
-
-	atomic.AddInt64(&z.count, 1)
-
 	return nil
 }
 
@@ -68,12 +58,6 @@ func (z *ZstdFile) Truncate(size int64) error {
 }
 
 func (z *ZstdFile) Unlock(elock sqlite3vfs.LockType) error {
-	if elock == sqlite3vfs.LockNone {
-		return nil
-	}
-
-	atomic.AddInt64(&z.count, -1)
-
 	return nil
 }
 

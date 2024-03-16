@@ -43,7 +43,7 @@ if initErr != nil {
     panic(fmt.Sprintf("Failed to initialize SQLiteZSTD: %s", initErr))
 }
 
-db, err := sql.Open("sqlite3", "<path-to-your-file>?vfs=zstd&mode=ro&immutable=true&synchronous=off")
+db, err := sql.Open("sqlite3", "<path-to-your-file>?vfs=zstd")
 if err != nil {
     panic(fmt.Sprintf("Failed to open database: %s", err))
 }
@@ -51,25 +51,20 @@ if err != nil {
 
 In this Go code example:
 
-- The SQLiteZSTD library is initialized first with sqlitezstd.Init().
+- The SQLiteZSTD library is initialized first with `sqlitezstd.Init()`.
 - An SQL connection to a compressed SQLite database is established with
-  sql.Open().
+  `sql.Open()`.
 
-The sql.Open() function takes as a parameter the path to the compressed SQLite
+The `sql.Open()` function takes as a parameter the path to the compressed SQLite
 database, appended with a query string. Key query string parameters include:
 
 - `vfs=zstd`: Ensures the ZSTD VFS is used.
-- `mode=ro`: Opens the database in read-only mode.
-- `immutable=true`: Ensures the database is protected from any accidental write
-  operations.
-- `synchronous=off`: Disables SQLite's disk synchronization for improved
-  performance on read-heavy operations.
 
 ## Performance
 
 Here's a simple benchmark comparing performance between reading from an
 uncompressed vs. a compressed SQLite database, involving the insertion of 10k
-records and retrieval of the MAX value, without an index.
+records and retrieval of the `MAX` value, without an index.
 
 ```
 BenchmarkReadUncompressedSQLite-8           5301            214922 ns/op

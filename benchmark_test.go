@@ -105,7 +105,7 @@ func BenchmarkReadCompressedSQLite(b *testing.B) {
 	_, zstPath, cleanup := setupDB(b)
 	defer cleanup()
 
-	client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd&mode=ro&immutable=true&synchronous=off", zstPath))
+	client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
 	if err != nil {
 		b.Fatalf("Failed to open database: %v", err)
 	}

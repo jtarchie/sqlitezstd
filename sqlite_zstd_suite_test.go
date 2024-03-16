@@ -65,7 +65,7 @@ var _ = Describe("SqliteZSTD", func() {
 	It("can read from a compressed sqlite db", func() {
 		zstPath := createDatabase()
 
-		client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd&mode=ro&immutable=true&synchronous=off", zstPath))
+		client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
 		Expect(err).ToNot(HaveOccurred())
 		defer client.Close()
 
@@ -90,7 +90,7 @@ var _ = Describe("SqliteZSTD", func() {
 				defer waiter.Done()
 				defer GinkgoRecover()
 
-				client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd&mode=ro&immutable=true&synchronous=off", zstPath))
+				client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
 				Expect(err).ToNot(HaveOccurred())
 				defer client.Close()
 

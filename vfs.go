@@ -60,7 +60,7 @@ func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File,
 		file:     file,
 		seekable: seekable,
 		size:     size,
-	}, 0, nil
+	}, flags | sqlite3vfs.OpenReadOnly, nil
 }
 
 func Init() error {

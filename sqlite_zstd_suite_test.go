@@ -6,6 +6,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sync"
 	"testing"
 
 	sqlitezstd "github.com/jtarchie/sqlitezstd"
@@ -19,6 +20,42 @@ func TestSqliteZstd(t *testing.T) {
 	RunSpecs(t, "SqliteZstd Suite")
 }
 
+func createDatabase() string {
+	buildPath, err := os.MkdirTemp("", "")
+	Expect(err).ToNot(HaveOccurred())
+
+	dbPath := filepath.Join(buildPath, "test.sqlite")
+
+	client, err := sql.Open("sqlite3", dbPath)
+	Expect(err).ToNot(HaveOccurred())
+
+	_, err = client.Exec(`
+		CREATE TABLE entries (
+			id INTEGER PRIMARY KEY
+		);
+	`)
+	Expect(err).ToNot(HaveOccurred())
+
+	for id := 1; id <= 1000; id++ {
+		_, err = client.Exec("INSERT INTO entries (id) VALUES (?)", id)
+		Expect(err).ToNot(HaveOccurred())
+	}
+
+	zstPath := dbPath + ".zst"
+
+	command := exec.Command(
+		"go", "run", "github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek",
+		"-f", dbPath,
+		"-o", zstPath,
+	)
+
+	session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
+	Expect(err).ToNot(HaveOccurred())
+	Eventually(session).Should(gexec.Exit(0))
+
+	return zstPath
+}
+
 var _ = Describe("SqliteZSTD", func() {
 	BeforeEach(func() {
 		err := sqlitezstd.Init()
@@ -26,39 +63,9 @@ var _ = Describe("SqliteZSTD", func() {
 	})
 
 	It("can read from a compressed sqlite db", func() {
-		buildPath, err := os.MkdirTemp("", "")
-		Expect(err).ToNot(HaveOccurred())
+		zstPath := createDatabase()
 
-		dbPath := filepath.Join(buildPath, "test.sqlite")
-
-		client, err := sql.Open("sqlite3", dbPath)
-		Expect(err).ToNot(HaveOccurred())
-
-		_, err = client.Exec(`
-			CREATE TABLE entries (
-				id INTEGER PRIMARY KEY
-			);
-		`)
-		Expect(err).ToNot(HaveOccurred())
-
-		for id := 1; id <= 1000; id++ {
-			_, err = client.Exec("INSERT INTO entries (id) VALUES (?)", id)
-			Expect(err).ToNot(HaveOccurred())
-		}
-
-		zstPath := dbPath + ".zst"
-
-		command := exec.Command(
-			"go", "run", "github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek",
-			"-f", dbPath,
-			"-o", zstPath,
-		)
-
-		session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
-		Expect(err).ToNot(HaveOccurred())
-		Eventually(session).Should(gexec.Exit(0))
-
-		client, err = sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd&mode=ro&immutable=true&synchronous=off", zstPath))
+		client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd&mode=ro&immutable=true&synchronous=off", zstPath))
 		Expect(err).ToNot(HaveOccurred())
 		defer client.Close()
 
@@ -69,5 +76,31 @@ var _ = Describe("SqliteZSTD", func() {
 		err = row.Scan(&count)
 		Expect(err).ToNot(HaveOccurred())
 		Expect(count).To(BeEquivalentTo(1000))
+	})
+
+	It("can handle multiple readers", func() {
+		zstPath := createDatabase()
+
+		waiter := &sync.WaitGroup{}
+
+		for i := 0; i < 5; i++ {
+			waiter.Add(1)
+
+			go func() {
+				defer waiter.Done()
+				defer GinkgoRecover()
+
+				client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd&mode=ro&immutable=true&synchronous=off", zstPath))
+				Expect(err).ToNot(HaveOccurred())
+				defer client.Close()
+
+				for i := 0; i < 1_000; i++ {
+					row := client.QueryRow("SELECT * FROM entries ORDER BY RANDOM() LIMIT 1;")
+					Expect(row.Err()).ToNot(HaveOccurred())
+				}
+			}()
+		}
+
+		waiter.Wait()
 	})
 })

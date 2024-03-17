@@ -44,12 +44,33 @@ func setupDB(b *testing.B) (string, string, func()) {
 		b.Fatalf("Failed to create table: %v", err)
 	}
 
-	for id := 1; id <= 10_000; id++ {
-		_, err = client.Exec("INSERT INTO entries (value) VALUES (?)", id)
+	transaction, err := client.Begin()
+	if err != nil {
+		b.Fatalf("Failed to start transaction: %v", err)
+	}
+
+	defer func() { _ = transaction.Rollback() }()
+
+	insert, err := transaction.Prepare("INSERT INTO entries (value) VALUES (?)")
+	if err != nil {
+		b.Fatalf("Failed to insert prepare: %v", err)
+	}
+	defer insert.Close()
+
+	for id := 1; id <= 1_000_000; id++ {
+		_, err = insert.Exec(id)
 		if err != nil {
 			b.Fatalf("Failed to insert data: %v", err)
 		}
 	}
+
+	_ = transaction.Commit()
+
+	// index reduces number of page loads
+	// _, err = client.Exec("CREATE INDEX aindex ON entries(value);")
+	// if err != nil {
+	// 	b.Fatalf("Failed to create index: %v", err)
+	// }
 
 	// Assuming the compression step is the same as in the test,
 	// and that it's already correctly set up and works.
@@ -67,7 +88,7 @@ func setupDB(b *testing.B) (string, string, func()) {
 		b.Fatalf("Failed to compress data: %v", err)
 	}
 
-	session.Wait()
+	session.Wait("10s")
 
 	// Cleanup function to remove temporary files.
 	cleanup := func() {

@@ -3,7 +3,7 @@ module github.com/jtarchie/sqlitezstd
 go 1.22.1
 
 require (
-	github.com/SaveTheRbtz/zstd-seekable-format-go v0.6.1
+	github.com/SaveTheRbtz/zstd-seekable-format-go v0.6.2-0.20231018052958-4410daa6d511
 	github.com/klauspost/compress v1.17.7
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/onsi/ginkgo/v2 v2.16.0
@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/SaveTheRbtz/fastcdc-go v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect

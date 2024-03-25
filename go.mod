@@ -7,7 +7,7 @@ require (
 	github.com/klauspost/compress v1.17.7
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/onsi/ginkgo/v2 v2.16.0
-	github.com/onsi/gomega v1.31.1
+	github.com/onsi/gomega v1.32.0
 	github.com/psanford/sqlite3vfs v0.0.0-20231201192653-4c99abef8114
 	howett.net/ranger v0.0.0-20171016084633-e2e137620847
 )
@@ -20,7 +20,6 @@ require (
 	github.com/google/btree v1.1.2 // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
 	github.com/google/pprof v0.0.0-20240227163752-401108e1b7e7 // indirect
-	github.com/restic/chunker v0.4.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect

@@ -6,7 +6,7 @@ require (
 	github.com/SaveTheRbtz/zstd-seekable-format-go v0.6.2-0.20231018052958-4410daa6d511
 	github.com/klauspost/compress v1.17.7
 	github.com/mattn/go-sqlite3 v1.14.22
-	github.com/onsi/ginkgo/v2 v2.16.0
+	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
 	github.com/psanford/sqlite3vfs v0.0.0-20231201192653-4c99abef8114
 	howett.net/ranger v0.0.0-20171016084633-e2e137620847

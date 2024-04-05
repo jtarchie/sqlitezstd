@@ -82,7 +82,7 @@ func setupDB(b *testing.B) (string, string) {
 	// index reduces number of page loads
 	_, err = client.Exec(`
 		CREATE INDEX aindex ON entries(value);
-		CREATE VIRTUAL TABLE entries_fts USING fts5(sentence);
+		CREATE VIRTUAL TABLE entries_fts USING fts5(sentence, tokenize="porter unicode61");
 		INSERT INTO entries_fts(rowid, sentence)
 		SELECT rowid, sentence FROM entries;
 		INSERT INTO entries_fts(entries_fts) VALUES ('optimize');
@@ -100,7 +100,7 @@ func setupDB(b *testing.B) (string, string) {
 		"go", "run", "github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek",
 		"-f", dbPath,
 		"-o", zstPath,
-		"-q", "22",
+		// "-q", "22",
 	)
 
 	session, err := gexec.Start(command, io.Discard, io.Discard)

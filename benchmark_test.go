@@ -10,11 +10,13 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	sqlitezstd "github.com/jtarchie/sqlitezstd"
 	_ "github.com/mattn/go-sqlite3" // ensure you import the SQLite3 driver
 	"github.com/onsi/gomega/gexec"
+	"github.com/pioz/faker"
 )
 
 // setupDB prepares a database for benchmarking.
@@ -38,7 +40,8 @@ func setupDB(b *testing.B) (string, string, func()) {
 
 	_, err = client.Exec(`
 		CREATE TABLE entries (
-			value INTEGER
+			value INTEGER,
+			sentence TEXT
 		);
 	`)
 	if err != nil {
@@ -52,14 +55,15 @@ func setupDB(b *testing.B) (string, string, func()) {
 
 	defer func() { _ = transaction.Rollback() }()
 
-	insert, err := transaction.Prepare("INSERT INTO entries (value) VALUES (?)")
+	insert, err := transaction.Prepare("INSERT INTO entries (value, sentence) VALUES (?, ?)")
 	if err != nil {
 		b.Fatalf("Failed to insert prepare: %v", err)
 	}
 	defer insert.Close()
 
-	for id := 1; id <= 1_000_000; id++ {
-		_, err = insert.Exec(rand.Int63())
+	for range 100_000 {
+		//nolint: gosec
+		_, err = insert.Exec(rand.Int63(), faker.Sentence())
 		if err != nil {
 			b.Fatalf("Failed to insert data: %v", err)
 		}
@@ -68,7 +72,14 @@ func setupDB(b *testing.B) (string, string, func()) {
 	_ = transaction.Commit()
 
 	// index reduces number of page loads
-	_, err = client.Exec("CREATE INDEX aindex ON entries(value);")
+	_, err = client.Exec(`
+		CREATE INDEX aindex ON entries(value);
+		CREATE VIRTUAL TABLE entries_fts USING fts5(sentence);
+		INSERT INTO entries_fts(rowid, sentence)
+		SELECT rowid, sentence FROM entries;
+		INSERT INTO entries_fts(entries_fts) VALUES ('optimize');
+		VACUUM;
+	`)
 	if err != nil {
 		b.Fatalf("Failed to create index: %v", err)
 	}
@@ -112,16 +123,44 @@ func BenchmarkReadUncompressedSQLite(b *testing.B) {
 	}
 	defer client.Close()
 
+	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
+
 	b.ResetTimer() // Start timing now.
 
-	for i := 0; i < b.N; i++ {
+	b.RunParallel(func(pb *testing.PB) {
 		var count int
-
-		err = client.QueryRow("SELECT MAX(value) FROM entries").Scan(&count)
-		if err != nil {
-			b.Fatalf("Query failed: %v", err)
+		for pb.Next() {
+			err = client.QueryRow("SELECT MAX(value) FROM entries").Scan(&count)
+			if err != nil {
+				b.Fatalf("Query failed: %v", err)
+			}
 		}
+	})
+}
+
+func BenchmarkReadUncompressedSQLiteFTS5(b *testing.B) {
+	dbPath, _, cleanup := setupDB(b)
+	defer cleanup()
+
+	client, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		b.Fatalf("Failed to open database: %v", err)
 	}
+	defer client.Close()
+
+	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
+
+	b.ResetTimer() // Start timing now.
+
+	b.RunParallel(func(pb *testing.PB) {
+		var count int
+		for pb.Next() {
+			err = client.QueryRow("SELECT COUNT(*) FROM entries_fts WHERE entries_fts MATCH 'alligator'").Scan(&count)
+			if err != nil {
+				b.Fatalf("Query failed: %v", err)
+			}
+		}
+	})
 }
 
 // Benchmark reading from the compressed SQLite file.
@@ -135,16 +174,44 @@ func BenchmarkReadCompressedSQLite(b *testing.B) {
 	}
 	defer client.Close()
 
+	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
+
 	b.ResetTimer() // Start timing now.
 
-	for i := 0; i < b.N; i++ {
+	b.RunParallel(func(pb *testing.PB) {
 		var count int
-
-		err = client.QueryRow("SELECT MAX(value) FROM entries").Scan(&count)
-		if err != nil {
-			b.Fatalf("Query failed: %v", err)
+		for pb.Next() {
+			err = client.QueryRow("SELECT MAX(value) FROM entries").Scan(&count)
+			if err != nil {
+				b.Fatalf("Query failed: %v", err)
+			}
 		}
+	})
+}
+
+func BenchmarkReadCompressedSQLiteFTS5(b *testing.B) {
+	_, zstPath, cleanup := setupDB(b)
+	defer cleanup()
+
+	client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
+	if err != nil {
+		b.Fatalf("Failed to open database: %v", err)
 	}
+	defer client.Close()
+
+	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
+
+	b.ResetTimer() // Start timing now.
+
+	b.RunParallel(func(pb *testing.PB) {
+		var count int
+		for pb.Next() {
+			err = client.QueryRow("SELECT COUNT(*) FROM entries_fts WHERE entries_fts MATCH 'alligator'").Scan(&count)
+			if err != nil {
+				b.Fatalf("Query failed: %v", err)
+			}
+		}
+	})
 }
 
 func BenchmarkReadCompressedHTTPSQLite(b *testing.B) {
@@ -162,14 +229,17 @@ func BenchmarkReadCompressedHTTPSQLite(b *testing.B) {
 	}
 	defer client.Close()
 
+	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
+
 	b.ResetTimer() // Start timing now.
 
-	for i := 0; i < b.N; i++ {
+	b.RunParallel(func(pb *testing.PB) {
 		var count int
-
-		err = client.QueryRow("SELECT MAX(value) FROM entries").Scan(&count)
-		if err != nil {
-			b.Fatalf("Query failed: %v", err)
+		for pb.Next() {
+			err = client.QueryRow("SELECT MAX(value) FROM entries").Scan(&count)
+			if err != nil {
+				b.Fatalf("Query failed: %v", err)
+			}
 		}
-	}
+	})
 }

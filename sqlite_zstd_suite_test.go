@@ -85,7 +85,7 @@ var _ = Describe("SqliteZSTD", func() {
 
 		waiter := &sync.WaitGroup{}
 
-		for i := 0; i < 5; i++ {
+		for range 5 {
 			waiter.Add(1)
 
 			go func() {
@@ -96,7 +96,7 @@ var _ = Describe("SqliteZSTD", func() {
 				Expect(err).ToNot(HaveOccurred())
 				defer client.Close()
 
-				for i := 0; i < 1_000; i++ {
+				for range 1_000 {
 					row := client.QueryRow("SELECT * FROM entries ORDER BY RANDOM() LIMIT 1;")
 					Expect(row.Err()).ToNot(HaveOccurred())
 				}

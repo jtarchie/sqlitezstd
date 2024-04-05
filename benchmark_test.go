@@ -19,10 +19,18 @@ import (
 	"github.com/pioz/faker"
 )
 
+//nolint: gochecknoglobals
+var dbPath, zstPath string
+
 // setupDB prepares a database for benchmarking.
 // It returns the path of the created database and a cleanup function.
-func setupDB(b *testing.B) (string, string, func()) {
+//nolint: cyclop
+func setupDB(b *testing.B) (string, string) {
 	b.Helper()
+
+	if dbPath != "" {
+		return dbPath, zstPath
+	}
 
 	_ = sqlitezstd.Init()
 
@@ -31,7 +39,7 @@ func setupDB(b *testing.B) (string, string, func()) {
 		b.Fatalf("Failed to create temp directory: %v", err)
 	}
 
-	dbPath := filepath.Join(buildPath, "test.sqlite")
+	dbPath = filepath.Join(buildPath, "test.sqlite")
 
 	client, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
@@ -61,7 +69,7 @@ func setupDB(b *testing.B) (string, string, func()) {
 	}
 	defer insert.Close()
 
-	for range 100_000 {
+	for range 1_000_000 {
 		//nolint: gosec
 		_, err = insert.Exec(rand.Int63(), faker.Sentence())
 		if err != nil {
@@ -86,7 +94,7 @@ func setupDB(b *testing.B) (string, string, func()) {
 
 	// Assuming the compression step is the same as in the test,
 	// and that it's already correctly set up and works.
-	zstPath := dbPath + ".zst"
+	zstPath = dbPath + ".zst"
 
 	command := exec.Command(
 		"go", "run", "github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek",
@@ -102,20 +110,12 @@ func setupDB(b *testing.B) (string, string, func()) {
 
 	session.Wait("10s")
 
-	// Cleanup function to remove temporary files.
-	cleanup := func() {
-		os.Remove(dbPath)
-		os.Remove(zstPath)
-		os.RemoveAll(buildPath)
-	}
-
-	return dbPath, zstPath, cleanup
+	return dbPath, zstPath
 }
 
 // Benchmark reading from the uncompressed SQLite file.
 func BenchmarkReadUncompressedSQLite(b *testing.B) {
-	dbPath, _, cleanup := setupDB(b)
-	defer cleanup()
+	dbPath, _ := setupDB(b)
 
 	client, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
@@ -139,8 +139,7 @@ func BenchmarkReadUncompressedSQLite(b *testing.B) {
 }
 
 func BenchmarkReadUncompressedSQLiteFTS5(b *testing.B) {
-	dbPath, _, cleanup := setupDB(b)
-	defer cleanup()
+	dbPath, _ := setupDB(b)
 
 	client, err := sql.Open("sqlite3", dbPath)
 	if err != nil {
@@ -165,8 +164,7 @@ func BenchmarkReadUncompressedSQLiteFTS5(b *testing.B) {
 
 // Benchmark reading from the compressed SQLite file.
 func BenchmarkReadCompressedSQLite(b *testing.B) {
-	_, zstPath, cleanup := setupDB(b)
-	defer cleanup()
+	_, zstPath := setupDB(b)
 
 	client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
 	if err != nil {
@@ -190,8 +188,7 @@ func BenchmarkReadCompressedSQLite(b *testing.B) {
 }
 
 func BenchmarkReadCompressedSQLiteFTS5(b *testing.B) {
-	_, zstPath, cleanup := setupDB(b)
-	defer cleanup()
+	_, zstPath := setupDB(b)
 
 	client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
 	if err != nil {
@@ -215,8 +212,7 @@ func BenchmarkReadCompressedSQLiteFTS5(b *testing.B) {
 }
 
 func BenchmarkReadCompressedHTTPSQLite(b *testing.B) {
-	_, zstPath, cleanup := setupDB(b)
-	defer cleanup()
+	_, zstPath := setupDB(b)
 
 	zstDir := filepath.Dir(zstPath)
 

@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -58,7 +59,7 @@ func setupDB(b *testing.B) (string, string, func()) {
 	defer insert.Close()
 
 	for id := 1; id <= 1_000_000; id++ {
-		_, err = insert.Exec(id)
+		_, err = insert.Exec(rand.Int63())
 		if err != nil {
 			b.Fatalf("Failed to insert data: %v", err)
 		}
@@ -67,10 +68,10 @@ func setupDB(b *testing.B) (string, string, func()) {
 	_ = transaction.Commit()
 
 	// index reduces number of page loads
-	// _, err = client.Exec("CREATE INDEX aindex ON entries(value);")
-	// if err != nil {
-	// 	b.Fatalf("Failed to create index: %v", err)
-	// }
+	_, err = client.Exec("CREATE INDEX aindex ON entries(value);")
+	if err != nil {
+		b.Fatalf("Failed to create index: %v", err)
+	}
 
 	// Assuming the compression step is the same as in the test,
 	// and that it's already correctly set up and works.

@@ -8,13 +8,14 @@ require (
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/onsi/ginkgo/v2 v2.17.1
 	github.com/onsi/gomega v1.32.0
-	github.com/pioz/faker v1.7.3
+	github.com/pioz/faker v2.0.1+incompatible
 	github.com/psanford/sqlite3vfs v0.0.0-20240315230605-24e1d98cf361
 	howett.net/ranger v0.0.0-20171016084633-e2e137620847
 )
 
 require (
 	github.com/SaveTheRbtz/fastcdc-go v0.3.0 // indirect
+	github.com/bxcodec/faker v2.0.1+incompatible // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect

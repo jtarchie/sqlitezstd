@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"os"
 	"strings"
+	"sync"
 
 	seekable "github.com/SaveTheRbtz/zstd-seekable-format-go"
 	"github.com/klauspost/compress/zstd"
@@ -74,11 +75,16 @@ func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File,
 	}, flags | sqlite3vfs.OpenReadOnly, nil
 }
 
-func Init() error {
+//nolint: gochecknoglobals
+var once = sync.OnceValue(func() error {
 	err := sqlite3vfs.RegisterVFS("zstd", &ZstdVFS{})
 	if err != nil {
 		return fmt.Errorf("could not register vfs: %w", err)
 	}
 
 	return nil
+})
+
+func Init() error {
+	return once()
 }

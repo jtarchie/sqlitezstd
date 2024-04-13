@@ -64,9 +64,12 @@ database, appended with a query string. Key query string parameters include:
 
 Here's a simple benchmark comparing performance between reading from an
 uncompressed vs. a compressed SQLite database, involving the insertion of 10k
-records and retrieval of the `MAX` value, without an index.
+records and retrieval of the `MAX` value (without an index) and FTS5.
 
 ```
-BenchmarkReadUncompressedSQLite-8           5301            214922 ns/op
-BenchmarkReadCompressedSQLite-8             5524            216015 ns/op
+BenchmarkReadUncompressedSQLite-4       	  155996	      7491 ns/op	     473 B/op	      15 allocs/op
+BenchmarkReadUncompressedSQLiteFTS5-4   	    2348	    474258 ns/op	     451 B/op	      15 allocs/op
+BenchmarkReadCompressedSQLite-4         	  281256	      4072 ns/op	    2845 B/op	      15 allocs/op
+BenchmarkReadCompressedSQLiteFTS5-4     	    2366	    488037 ns/op	   28936 B/op	      15 allocs/op
+BenchmarkReadCompressedHTTPSQLite-4     	  275788	      4314 ns/op	    3399 B/op	      15 allocs/op
 ```

@@ -82,10 +82,14 @@ func setupDB(b *testing.B) (string, string) {
 	// index reduces number of page loads
 	_, err = client.Exec(`
 		CREATE INDEX aindex ON entries(value);
-		CREATE VIRTUAL TABLE entries_fts USING fts5(sentence, tokenize="porter unicode61");
-		INSERT INTO entries_fts(rowid, sentence)
-		SELECT rowid, sentence FROM entries;
-		INSERT INTO entries_fts(entries_fts) VALUES ('optimize');
+		CREATE VIRTUAL TABLE entries_porter USING fts5(sentence, tokenize="porter unicode61");
+		CREATE VIRTUAL TABLE entries_trigram USING fts5(sentence, tokenize="trigram");
+		INSERT INTO entries_porter(rowid, sentence)
+			SELECT rowid, sentence FROM entries;
+		INSERT INTO entries_trigram(rowid, sentence)
+			SELECT rowid, sentence FROM entries;
+		INSERT INTO entries_porter(entries_porter) VALUES ('optimize');
+		INSERT INTO entries_trigram(entries_trigram) VALUES ('optimize');
 		VACUUM;
 	`)
 	if err != nil {
@@ -138,7 +142,7 @@ func BenchmarkReadUncompressedSQLite(b *testing.B) {
 	})
 }
 
-func BenchmarkReadUncompressedSQLiteFTS5(b *testing.B) {
+func BenchmarkReadUncompressedSQLiteFTS5Porter(b *testing.B) {
 	dbPath, _ := setupDB(b)
 
 	client, err := sql.Open("sqlite3", dbPath)
@@ -154,7 +158,31 @@ func BenchmarkReadUncompressedSQLiteFTS5(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		var count int
 		for pb.Next() {
-			err = client.QueryRow("SELECT COUNT(*) FROM entries_fts WHERE entries_fts MATCH 'alligator'").Scan(&count)
+			err = client.QueryRow("SELECT COUNT(*) FROM entries_porter WHERE entries_porter MATCH 'alligator'").Scan(&count)
+			if err != nil {
+				b.Fatalf("Query failed: %v", err)
+			}
+		}
+	})
+}
+
+func BenchmarkReadUncompressedSQLiteFTS5Trigram(b *testing.B) {
+	dbPath, _ := setupDB(b)
+
+	client, err := sql.Open("sqlite3", dbPath)
+	if err != nil {
+		b.Fatalf("Failed to open database: %v", err)
+	}
+	defer client.Close()
+
+	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
+
+	b.ResetTimer() // Start timing now.
+
+	b.RunParallel(func(pb *testing.PB) {
+		var count int
+		for pb.Next() {
+			err = client.QueryRow("SELECT COUNT(*) FROM entries_trigram WHERE entries_trigram MATCH 'alligator'").Scan(&count)
 			if err != nil {
 				b.Fatalf("Query failed: %v", err)
 			}
@@ -187,7 +215,7 @@ func BenchmarkReadCompressedSQLite(b *testing.B) {
 	})
 }
 
-func BenchmarkReadCompressedSQLiteFTS5(b *testing.B) {
+func BenchmarkReadCompressedSQLiteFTS5Porter(b *testing.B) {
 	_, zstPath := setupDB(b)
 
 	client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
@@ -203,7 +231,31 @@ func BenchmarkReadCompressedSQLiteFTS5(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		var count int
 		for pb.Next() {
-			err = client.QueryRow("SELECT COUNT(*) FROM entries_fts WHERE entries_fts MATCH 'alligator'").Scan(&count)
+			err = client.QueryRow("SELECT COUNT(*) FROM entries_porter WHERE entries_porter MATCH 'alligator'").Scan(&count)
+			if err != nil {
+				b.Fatalf("Query failed: %v", err)
+			}
+		}
+	})
+}
+
+func BenchmarkReadCompressedSQLiteFTS5Trigram(b *testing.B) {
+	_, zstPath := setupDB(b)
+
+	client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
+	if err != nil {
+		b.Fatalf("Failed to open database: %v", err)
+	}
+	defer client.Close()
+
+	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
+
+	b.ResetTimer() // Start timing now.
+
+	b.RunParallel(func(pb *testing.PB) {
+		var count int
+		for pb.Next() {
+			err = client.QueryRow("SELECT COUNT(*) FROM entries_trigram WHERE entries_trigram MATCH 'alligator'").Scan(&count)
 			if err != nil {
 				b.Fatalf("Query failed: %v", err)
 			}

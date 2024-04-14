@@ -67,9 +67,11 @@ uncompressed vs. a compressed SQLite database, involving the insertion of 10k
 records and retrieval of the `MAX` value (without an index) and FTS5.
 
 ```
-BenchmarkReadUncompressedSQLite-4       	  155996	      7491 ns/op	     473 B/op	      15 allocs/op
-BenchmarkReadUncompressedSQLiteFTS5-4   	    2348	    474258 ns/op	     451 B/op	      15 allocs/op
-BenchmarkReadCompressedSQLite-4         	  281256	      4072 ns/op	    2845 B/op	      15 allocs/op
-BenchmarkReadCompressedSQLiteFTS5-4     	    2366	    488037 ns/op	   28936 B/op	      15 allocs/op
-BenchmarkReadCompressedHTTPSQLite-4     	  275788	      4314 ns/op	    3399 B/op	      15 allocs/op
+BenchmarkReadUncompressedSQLite-4              	  159717	      7459 ns/op	     473 B/op	      15 allocs/op
+BenchmarkReadUncompressedSQLiteFTS5Porter-4    	    2478	    471685 ns/op	     450 B/op	      15 allocs/op
+BenchmarkReadUncompressedSQLiteFTS5Trigram-4   	     100	  10449792 ns/op	     542 B/op	      16 allocs/op
+BenchmarkReadCompressedSQLite-4                	  266703	      3877 ns/op	    2635 B/op	      15 allocs/op
+BenchmarkReadCompressedSQLiteFTS5Porter-4      	    2335	    487430 ns/op	   33992 B/op	      16 allocs/op
+BenchmarkReadCompressedSQLiteFTS5Trigram-4     	      48	  21235303 ns/op	45970431 B/op	     148 allocs/op
+BenchmarkReadCompressedHTTPSQLite-4            	  284820	      4341 ns/op	    3312 B/op	      15 allocs/op
 ```

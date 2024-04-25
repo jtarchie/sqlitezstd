@@ -7,7 +7,7 @@ require (
 	github.com/klauspost/compress v1.17.8
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/onsi/ginkgo/v2 v2.17.1
-	github.com/onsi/gomega v1.32.0
+	github.com/onsi/gomega v1.33.0
 	github.com/pioz/faker v1.7.3
 	github.com/psanford/sqlite3vfs v0.0.0-20240315230605-24e1d98cf361
 	howett.net/ranger v0.0.0-20171016084633-e2e137620847

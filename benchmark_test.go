@@ -123,6 +123,7 @@ func setupDB(b *testing.B) (string, string) {
 			SELECT rowid, sentence FROM entries;
 		INSERT INTO entries_porter(entries_porter) VALUES ('optimize');
 		INSERT INTO entries_trigram(entries_trigram) VALUES ('optimize');
+		PRAGMA page_size = 65536;
 		VACUUM;
 	`)
 	if err != nil {
@@ -137,7 +138,8 @@ func setupDB(b *testing.B) (string, string) {
 		"go", "run", "github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek",
 		"-f", dbPath,
 		"-o", zstPath,
-		// "-q", "22",
+		"-q", "7",
+		"-c", "16:32:64",
 	)
 
 	session, err := gexec.Start(command, os.Stderr, os.Stderr)

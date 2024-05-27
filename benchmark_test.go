@@ -172,6 +172,16 @@ func BenchmarkReadUncompressedSQLite(b *testing.B) {
 	}
 	defer client.Close()
 
+	_, err = client.Exec(`
+		pragma temp_store = memory;
+		pragma mmap_size = 268435456; -- 256 MB
+		PRAGMA cache_size = 2000;
+		PRAGMA busy_timeout = 5000;
+	`)
+	if err != nil {
+		b.Fatalf("could not setup pragmas: %v", err)
+	}
+
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
 	b.ResetTimer() // Start timing now.
@@ -195,6 +205,16 @@ func BenchmarkReadUncompressedRtreeSQLite(b *testing.B) {
 		b.Fatalf("Failed to open database: %v", err)
 	}
 	defer client.Close()
+
+	_, err = client.Exec(`
+		pragma temp_store = memory;
+		pragma mmap_size = 268435456; -- 256 MB
+		PRAGMA cache_size = 2000;
+		PRAGMA busy_timeout = 5000;
+	`)
+	if err != nil {
+		b.Fatalf("could not setup pragmas: %v", err)
+	}
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -227,6 +247,16 @@ func BenchmarkReadUncompressedSQLiteFTS5Porter(b *testing.B) {
 	}
 	defer client.Close()
 
+	_, err = client.Exec(`
+		pragma temp_store = memory;
+		pragma mmap_size = 268435456; -- 256 MB
+		PRAGMA cache_size = 2000;
+		PRAGMA busy_timeout = 5000;
+	`)
+	if err != nil {
+		b.Fatalf("could not setup pragmas: %v", err)
+	}
+
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
 	b.ResetTimer() // Start timing now.
@@ -250,6 +280,16 @@ func BenchmarkReadUncompressedSQLiteFTS5Trigram(b *testing.B) {
 		b.Fatalf("Failed to open database: %v", err)
 	}
 	defer client.Close()
+
+	_, err = client.Exec(`
+		pragma temp_store = memory;
+		pragma mmap_size = 268435456; -- 256 MB
+		PRAGMA cache_size = 2000;
+		PRAGMA busy_timeout = 5000;
+	`)
+	if err != nil {
+		b.Fatalf("could not setup pragmas: %v", err)
+	}
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -276,6 +316,16 @@ func BenchmarkReadCompressedSQLite(b *testing.B) {
 	}
 	defer client.Close()
 
+	_, err = client.Exec(`
+		pragma temp_store = memory;
+		pragma mmap_size = 268435456; -- 256 MB
+		PRAGMA cache_size = 2000;
+		PRAGMA busy_timeout = 5000;
+	`)
+	if err != nil {
+		b.Fatalf("could not setup pragmas: %v", err)
+	}
+
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
 	b.ResetTimer() // Start timing now.
@@ -300,6 +350,16 @@ func BenchmarkReadCompressedSQLiteFTS5Porter(b *testing.B) {
 	}
 	defer client.Close()
 
+	_, err = client.Exec(`
+		pragma temp_store = memory;
+		pragma mmap_size = 268435456; -- 256 MB
+		PRAGMA cache_size = 2000;
+		PRAGMA busy_timeout = 5000;
+	`)
+	if err != nil {
+		b.Fatalf("could not setup pragmas: %v", err)
+	}
+
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
 	b.ResetTimer() // Start timing now.
@@ -323,6 +383,16 @@ func BenchmarkReadCompressedSQLiteFTS5Trigram(b *testing.B) {
 		b.Fatalf("Failed to open database: %v", err)
 	}
 	defer client.Close()
+
+	_, err = client.Exec(`
+		pragma temp_store = memory;
+		pragma mmap_size = 268435456; -- 256 MB
+		PRAGMA cache_size = 2000;
+		PRAGMA busy_timeout = 5000;
+	`)
+	if err != nil {
+		b.Fatalf("could not setup pragmas: %v", err)
+	}
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -353,6 +423,16 @@ func BenchmarkReadCompressedHTTPSQLite(b *testing.B) {
 	}
 	defer client.Close()
 
+	_, err = client.Exec(`
+		pragma temp_store = memory;
+		pragma mmap_size = 268435456; -- 256 MB
+		PRAGMA cache_size = 2000;
+		PRAGMA busy_timeout = 5000;
+	`)
+	if err != nil {
+		b.Fatalf("could not setup pragmas: %v", err)
+	}
+
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
 	b.ResetTimer() // Start timing now.
@@ -376,6 +456,16 @@ func BenchmarkReadCompressedRtreeSQLite(b *testing.B) {
 		b.Fatalf("Failed to open database: %v", err)
 	}
 	defer client.Close()
+
+	_, err = client.Exec(`
+		pragma temp_store = memory;
+		pragma mmap_size = 268435456; -- 256 MB
+		PRAGMA cache_size = 2000;
+		PRAGMA busy_timeout = 5000;
+	`)
+	if err != nil {
+		b.Fatalf("could not setup pragmas: %v", err)
+	}
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 

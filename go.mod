@@ -4,7 +4,7 @@ go 1.22.1
 
 require (
 	github.com/SaveTheRbtz/zstd-seekable-format-go v0.6.2-0.20231018052958-4410daa6d511
-	github.com/klauspost/compress v1.17.8
+	github.com/klauspost/compress v1.17.9
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/onsi/ginkgo/v2 v2.19.0
 	github.com/onsi/gomega v1.33.1

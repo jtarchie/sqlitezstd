@@ -1,7 +1,9 @@
 github.com/SaveTheRbtz/fastcdc-go v0.3.0 h1:JdHvLlnijDuisYIwpRDcHZEjbxvCqtEmJ3gf35VJBgA=
 github.com/SaveTheRbtz/fastcdc-go v0.3.0/go.mod h1:2kMKqvBv1h9wCaUfETqsVkSESsCiFhp4YyEHyz7/SfE=
-github.com/SaveTheRbtz/zstd-seekable-format-go v0.6.2-0.20231018052958-4410daa6d511 h1:6zgbk+bj0JJLtDlrQpaEPSvWmNeRZMZpogpt2KqX2yE=
-github.com/SaveTheRbtz/zstd-seekable-format-go v0.6.2-0.20231018052958-4410daa6d511/go.mod h1:/c6B1uw8h2AxDjxpuIzuH6ja+imc24EYlmE1kRqghjY=
+github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.0.0-20240724012851-f5b902bbf780 h1:hK8g7E5GNm5Nba0LLHKkzSa6fn48qFx2hIHnBoG/Pbk=
+github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.0.0-20240724012851-f5b902bbf780/go.mod h1:ttV1plxsX4iWEugu0Erdyp4cI3fCNidlMi74YMYO4UE=
+github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.0.0-20240724012851-f5b902bbf780 h1:j24rY30/uJaRrS+iipIOzyoF9xUXgQf4synxU7MvWiA=
+github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.0.0-20240724012851-f5b902bbf780/go.mod h1:JitQWJ8JuV4Y87l8VsHiiwhb3cgdyn68mX40s7NT6PA=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/davecgh/go-spew v1.1.0/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
@@ -35,8 +37,8 @@ github.com/psanford/sqlite3vfs v0.0.0-20240315230605-24e1d98cf361 h1:vAKifIJuYY3
 github.com/psanford/sqlite3vfs v0.0.0-20240315230605-24e1d98cf361/go.mod h1:iW4cSew5PAb1sMZiTEkVJAIBNrepaB6jTYjeP47WtI0=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/testify v1.6.1/go.mod h1:6Fq8oRcR53rry900zMqJjRRixrwX3KX962/h/Wwjteg=
-github.com/stretchr/testify v1.8.4 h1:CcVxjf3Q8PM0mHUKJCdn+eZZtm5yQwehR5yeSVQQcUk=
-github.com/stretchr/testify v1.8.4/go.mod h1:sz/lmYIOXD/1dqDmKjjqLyZ2RngseejIcXlSw2iwfAo=
+github.com/stretchr/testify v1.9.0 h1:HtqpIVDClZ4nwg75+f6Lvsy/wHu+3BoSGCbBAcpTsTg=
+github.com/stretchr/testify v1.9.0/go.mod h1:r2ic/lqez/lEtzL7wO/rwa5dbSLXVDPFyf8C91i36aY=
 go.uber.org/atomic v1.11.0 h1:ZvwS0R+56ePWxUNi+Atn9dWONBPp/AUETXlHW0DxSjE=
 go.uber.org/atomic v1.11.0/go.mod h1:LUxbIzbOniOlMKjJjyPfpl4v+PKK2cNJn91OQbhoJI0=
 go.uber.org/goleak v1.3.0 h1:2K3zAYmnTNqV73imy9J1T3WC+gmCePx2hEGkimedGto=

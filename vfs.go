@@ -8,7 +8,7 @@ import (
 	"strings"
 	"sync"
 
-	seekable "github.com/SaveTheRbtz/zstd-seekable-format-go"
+	seekable "github.com/SaveTheRbtz/zstd-seekable-format-go/pkg"
 	"github.com/klauspost/compress/zstd"
 	_ "github.com/mattn/go-sqlite3"
 	"github.com/psanford/sqlite3vfs"

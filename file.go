@@ -3,7 +3,7 @@ package sqlitezstd
 import (
 	"io"
 
-	seekable "github.com/SaveTheRbtz/zstd-seekable-format-go"
+	seekable "github.com/SaveTheRbtz/zstd-seekable-format-go/pkg"
 	"github.com/klauspost/compress/zstd"
 	"github.com/psanford/sqlite3vfs"
 )

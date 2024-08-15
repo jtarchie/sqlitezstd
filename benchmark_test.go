@@ -19,7 +19,7 @@ import (
 	"github.com/pioz/faker"
 )
 
-//nolint: gosec
+// nolint: gosec
 func randomBoundingBox() (float64, float64, float64, float64) {
 	minX := rand.Float64() * 100
 	maxX := minX + rand.Float64()*10
@@ -29,12 +29,12 @@ func randomBoundingBox() (float64, float64, float64, float64) {
 	return minX, maxX, minY, maxY
 }
 
-//nolint: gochecknoglobals
+// nolint: gochecknoglobals
 var dbPath, zstPath string
 
 // setupDB prepares a database for benchmarking.
 // It returns the path of the created database and a cleanup function.
-//nolint: cyclop
+// nolint: cyclop
 func setupDB(b *testing.B) (string, string) {
 	b.Helper()
 

@@ -75,7 +75,7 @@ func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File,
 	}, flags | sqlite3vfs.OpenReadOnly, nil
 }
 
-//nolint: gochecknoglobals
+// nolint: gochecknoglobals
 var once = sync.OnceValue(func() error {
 	err := sqlite3vfs.RegisterVFS("zstd", &ZstdVFS{})
 	if err != nil {

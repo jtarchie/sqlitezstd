@@ -3,7 +3,7 @@ module github.com/jtarchie/sqlitezstd
 go 1.22.5
 
 require (
-	github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.0.0-20240803175058-7cbe6d1f565d
+	github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.0.0-20240816173256-744d36214f01
 	github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.7.2
 	github.com/klauspost/compress v1.17.9
 	github.com/mattn/go-sqlite3 v1.14.22

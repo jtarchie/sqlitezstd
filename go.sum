@@ -1,7 +1,7 @@
 github.com/SaveTheRbtz/fastcdc-go v0.3.0 h1:JdHvLlnijDuisYIwpRDcHZEjbxvCqtEmJ3gf35VJBgA=
 github.com/SaveTheRbtz/fastcdc-go v0.3.0/go.mod h1:2kMKqvBv1h9wCaUfETqsVkSESsCiFhp4YyEHyz7/SfE=
-github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.0.0-20240803175058-7cbe6d1f565d h1:VL13InlkbRD0aiSfkrNnKhZYKrZANFSZqN0EkSQd9BI=
-github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.0.0-20240803175058-7cbe6d1f565d/go.mod h1:82R9AAk+1f6SybX1atLu2i9eaJLrHvWc262R8d57iVs=
+github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.0.0-20240816173256-744d36214f01 h1:/dFymBEj+ezPVtfPblcBbNF0zdAnUeZuidinBmJtdNA=
+github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.0.0-20240816173256-744d36214f01/go.mod h1:OX23rguRwxX8I+Kdj0166fVAmcfu0oLvKkbOx0dXd7I=
 github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.7.2 h1:cSXom2MoKJ9KPPw29RoZtHvUETY4F4n/kXl8m9btnQ0=
 github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.7.2/go.mod h1:JitQWJ8JuV4Y87l8VsHiiwhb3cgdyn68mX40s7NT6PA=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=

@@ -24,7 +24,7 @@ func TestSqliteZstd(t *testing.T) {
 	RunSpecs(t, "SqliteZstd Suite")
 }
 
-const maxSize = 50_000
+const maxSize = 100_000
 
 func createDatabase() string {
 	buildPath, err := os.MkdirTemp("", "")
@@ -239,6 +239,9 @@ var _ = Describe("SqliteZSTD", func() {
 		Expect(count).To(BeEquivalentTo(maxSize))
 
 		query := `
+		  -- since VFS is read-only, it can not be used for files
+			-- please use this
+			PRAGMA temp_store = memory;
 			SELECT u.age, COUNT(*) as order_count, SUM(o.quantity) as total_quantity
 			FROM users u
 			JOIN orders o ON u.id = o.user_id

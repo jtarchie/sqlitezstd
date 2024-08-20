@@ -54,18 +54,20 @@ db, err := sql.Open("sqlite3", "<path-to-your-file>?vfs=zstd")
 if err != nil {
     panic(fmt.Sprintf("Failed to open database: %s", err))
 }
+
+_, err = db.Exec(`PRAGMA temp_store = memory;`)
+if err != nil {
+    panic(fmt.Sprintf("Failed to set PRAGMA: %s", err))
+}
 ```
 
 In this Go code example:
 
 - The SQLiteZSTD library is initialized first with `sqlitezstd.Init()`.
-- An SQL connection to a compressed SQLite database is established with
-  `sql.Open()`.
-
-The `sql.Open()` function takes as a parameter the path to the compressed SQLite
-database, appended with a query string. Key query string parameters include:
-
-- `vfs=zstd`: Ensures the ZSTD VFS is used.
+- The `sql.Open()` function takes as a parameter the path to the compressed
+  SQLite database, appended with a query string with `vfs=zstd` to use the VFS.
+- Setting the `PRAGMA` ensures that the read only VFS is not used to create
+  temporary files.
 
 ## Performance
 

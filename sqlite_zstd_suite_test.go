@@ -24,6 +24,8 @@ func TestSqliteZstd(t *testing.T) {
 	RunSpecs(t, "SqliteZstd Suite")
 }
 
+const maxSize = 50_000
+
 func createDatabase() string {
 	buildPath, err := os.MkdirTemp("", "")
 	Expect(err).ToNot(HaveOccurred())
@@ -40,10 +42,21 @@ func createDatabase() string {
 	`)
 	Expect(err).ToNot(HaveOccurred())
 
-	for id := 1; id <= 1000; id++ {
-		_, err = client.Exec("INSERT INTO entries (id) VALUES (?)", id)
+	tx, err := client.Begin()
+	Expect(err).ToNot(HaveOccurred())
+	defer func() { _ = tx.Rollback() }()
+
+	stmt, err := tx.Prepare("INSERT INTO entries (id) VALUES (?)")
+	Expect(err).ToNot(HaveOccurred())
+	defer stmt.Close()
+
+	for id := 1; id <= maxSize; id++ {
+		_, err = stmt.Exec(id)
 		Expect(err).ToNot(HaveOccurred())
 	}
+
+	err = tx.Commit()
+	Expect(err).ToNot(HaveOccurred())
 
 	zstPath := dbPath + ".zst"
 
@@ -86,13 +99,31 @@ func createComplexDatabase() (string, string) {
 	`)
 	Expect(err).ToNot(HaveOccurred())
 
-	for i := 1; i <= 10_000; i++ {
-		_, err = client.Exec("INSERT INTO users (name, age) VALUES (?, ?)", fmt.Sprintf("User%d", i), 20+(i%60))
+	tx, err := client.Begin()
+	Expect(err).ToNot(HaveOccurred())
+	defer func() { _ = tx.Rollback() }()
+
+	userStmt, err := tx.Prepare("INSERT INTO users (name, age) VALUES (?, ?)")
+	Expect(err).ToNot(HaveOccurred())
+	defer userStmt.Close()
+
+	orderStmt, err := tx.Prepare("INSERT INTO orders (user_id, product, quantity) VALUES (?, ?, ?)")
+	Expect(err).ToNot(HaveOccurred())
+	defer orderStmt.Close()
+
+	for i := 1; i <= maxSize; i++ {
+		_, err = userStmt.Exec(fmt.Sprintf("User%d", i), 20+(i%60))
 		Expect(err).ToNot(HaveOccurred())
 
-		_, err = client.Exec("INSERT INTO orders (user_id, product, quantity) VALUES (?, ?, ?)", i, fmt.Sprintf("Product%d", i%100), i%10+1)
+		_, err = orderStmt.Exec(i, fmt.Sprintf("Product%d", i%100), i%10+1)
 		Expect(err).ToNot(HaveOccurred())
 	}
+
+	err = tx.Commit()
+	Expect(err).ToNot(HaveOccurred())
+
+	err = client.Close()
+	Expect(err).ToNot(HaveOccurred())
 
 	zstPath := dbPath + ".zst"
 
@@ -100,6 +131,8 @@ func createComplexDatabase() (string, string) {
 		"go", "run", "github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek",
 		"-f", dbPath,
 		"-o", zstPath,
+		"-t",
+		"-c", "16:32:64",
 	)
 
 	session, err := gexec.Start(command, GinkgoWriter, GinkgoWriter)
@@ -128,7 +161,7 @@ var _ = Describe("SqliteZSTD", func() {
 		var count int64
 		err = row.Scan(&count)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(count).To(BeEquivalentTo(1000))
+		Expect(count).To(BeEquivalentTo(maxSize))
 	})
 
 	It("can handle multiple readers", func() {
@@ -184,7 +217,7 @@ var _ = Describe("SqliteZSTD", func() {
 		var count int64
 		err = row.Scan(&count)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(count).To(BeEquivalentTo(1000))
+		Expect(count).To(BeEquivalentTo(maxSize))
 	})
 
 	It("ensures data integrity between compressed and uncompressed databases", func() {
@@ -197,6 +230,13 @@ var _ = Describe("SqliteZSTD", func() {
 		compressedDB, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", compressedPath))
 		Expect(err).ToNot(HaveOccurred())
 		defer compressedDB.Close()
+
+		row := compressedDB.QueryRow(`SELECT COUNT(*) FROM users;`)
+		Expect(row.Err()).ToNot(HaveOccurred())
+
+		var count int64
+		Expect(row.Scan(&count)).ToNot(HaveOccurred())
+		Expect(count).To(BeEquivalentTo(maxSize))
 
 		query := `
 			SELECT u.age, COUNT(*) as order_count, SUM(o.quantity) as total_quantity

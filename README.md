@@ -1,7 +1,6 @@
 # SQLiteZSTD: Read-Only Access to Compressed SQLite Files
 
-> [!IMPORTANT]
-> A new version of this extension written in C is now available.
+> [!IMPORTANT] A new version of this extension written in C is now available.
 > This C version offers the advantage of being usable across different
 > platforms, languages, and runtimes. It is not publicly available and is
 > provided under a one-time fee in perpetuity license with support. The original
@@ -56,10 +55,24 @@ if err != nil {
     panic(fmt.Sprintf("Failed to open database: %s", err))
 }
 
-_, err = db.Exec(`PRAGMA temp_store = memory;`)
+// Set PRAGMA for each connection
+db.SetConnMaxLifetime(0) // Disable connection pooling
+db.SetMaxOpenConns(1)    // Allow only one open connection
+
+conn, err := db.Conn(context.Background())
+if err != nil {
+    panic(fmt.Sprintf("Failed to get connection: %s", err))
+}
+defer conn.Close()
+
+// PRAGMA's are not persisted across `database/sql` pooled connections
+// this is to _ensure_ it happens for this one.
+_, err = conn.ExecContext(context.Background(), `PRAGMA temp_store = memory;`)
 if err != nil {
     panic(fmt.Sprintf("Failed to set PRAGMA: %s", err))
 }
+
+// Use conn for subsequent operations to ensure PRAGMA is applied
 ```
 
 In this Go code example:

@@ -5,9 +5,10 @@ go 1.22.5
 require (
 	github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.0.0-20240816173256-744d36214f01
 	github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.7.2
+	github.com/georgysavva/scany/v2 v2.1.3
 	github.com/klauspost/compress v1.17.9
 	github.com/mattn/go-sqlite3 v1.14.22
-	github.com/onsi/ginkgo/v2 v2.20.0
+	github.com/onsi/ginkgo/v2 v2.20.1
 	github.com/onsi/gomega v1.34.1
 	github.com/pioz/faker v1.7.3
 	github.com/psanford/sqlite3vfs v0.0.0-20240315230605-24e1d98cf361
@@ -17,7 +18,6 @@ require (
 require (
 	github.com/SaveTheRbtz/fastcdc-go v0.3.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
-	github.com/georgysavva/scany/v2 v2.1.3 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/google/btree v1.1.2 // indirect

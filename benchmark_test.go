@@ -14,10 +14,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/brianvoe/gofakeit/v7"
 	sqlitezstd "github.com/jtarchie/sqlitezstd"
 	_ "github.com/mattn/go-sqlite3" // ensure you import the SQLite3 driver
 	"github.com/onsi/gomega/gexec"
-	"github.com/brianvoe/gofakeit/v7"
 )
 
 // nolint: gosec

@@ -3,6 +3,7 @@ package sqlitezstd_test
 import (
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"math/rand"
 	"net/http"
 	"net/http/httptest"
@@ -16,7 +17,7 @@ import (
 	sqlitezstd "github.com/jtarchie/sqlitezstd"
 	_ "github.com/mattn/go-sqlite3" // ensure you import the SQLite3 driver
 	"github.com/onsi/gomega/gexec"
-	"github.com/pioz/faker"
+	"github.com/brianvoe/gofakeit/v7"
 )
 
 // nolint: gosec
@@ -59,7 +60,11 @@ func setupDB(b *testing.B) (string, string) {
 	_, err = client.Exec(`
 		CREATE TABLE entries (
 			value INTEGER,
-			sentence TEXT
+			sentence TEXT,
+			minX REAL,
+			maxX REAL,
+			minY REAL,
+			maxY REAL
 		);
 
 		CREATE VIRTUAL TABLE demo_rtree USING rtree(
@@ -81,54 +86,47 @@ func setupDB(b *testing.B) (string, string) {
 
 	defer func() { _ = transaction.Rollback() }()
 
-	insertEntry, err := transaction.Prepare("INSERT INTO entries (value, sentence) VALUES (?, ?)")
+	insertEntry, err := transaction.Prepare("INSERT INTO entries (value, sentence, minX, maxX, minY, maxY) VALUES (?, ?, ?, ?, ?, ?)")
 	if err != nil {
 		b.Fatalf("Failed to entry prepare: %v", err)
 	}
 	defer insertEntry.Close()
 
-	insertRtree, err := transaction.Prepare("INSERT INTO demo_rtree (id, minX, maxX, minY, maxY) VALUES (?, ?, ?, ?, ?)")
-	if err != nil {
-		b.Fatalf("Failed to rtree prepare: %v", err)
-	}
-	defer insertRtree.Close()
+	slog.Info("insert.start")
 
-	for index := range 1_000_000 {
+	for range 1_000_000 {
 		//nolint: gosec
-		_, err = insertEntry.Exec(rand.Int63(), faker.Sentence())
+		minX, maxX, minY, maxY := randomBoundingBox()
+		_, err = insertEntry.Exec(rand.Int63(), gofakeit.Sentence(100), minX, maxX, minY, maxY)
 		if err != nil {
 			b.Fatalf("Failed to insert data: %v", err)
 		}
-
-		if index%10 == 0 {
-			minX, maxX, minY, maxY := randomBoundingBox()
-
-			_, err = insertRtree.Exec(index, minX, maxX, minY, maxY)
-			if err != nil {
-				b.Fatalf("Failed to insert data: %v", err)
-			}
-		}
 	}
 
+	slog.Info("insert.done")
+
 	_ = transaction.Commit()
+
+	slog.Info("tx.done")
 
 	// index reduces number of page loads
 	_, err = client.Exec(`
 		CREATE INDEX aindex ON entries(value);
 		CREATE VIRTUAL TABLE entries_porter USING fts5(sentence, tokenize="porter unicode61");
-		CREATE VIRTUAL TABLE entries_trigram USING fts5(sentence, tokenize="trigram");
 		INSERT INTO entries_porter(rowid, sentence)
 			SELECT rowid, sentence FROM entries;
-		INSERT INTO entries_trigram(rowid, sentence)
-			SELECT rowid, sentence FROM entries;
+		INSERT INTO demo_rtree (id, minX, maxX, minY, maxY)
+		 	SELECT rowid, minX, maxX, minY, maxY from entries;
 		INSERT INTO entries_porter(entries_porter) VALUES ('optimize');
-		INSERT INTO entries_trigram(entries_trigram) VALUES ('optimize');
-		PRAGMA page_size = 65536;
+		PRAGMA page_size = 4096;
 		VACUUM;
+		PRAGMA optimize;
 	`)
 	if err != nil {
 		b.Fatalf("Failed to create index: %v", err)
 	}
+
+	slog.Info("commit.end")
 
 	// Assuming the compression step is the same as in the test,
 	// and that it's already correctly set up and works.
@@ -138,7 +136,6 @@ func setupDB(b *testing.B) (string, string) {
 		"go", "run", "github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek",
 		"-f", dbPath,
 		"-o", zstPath,
-		"-q", "7",
 		"-c", "16:32:64",
 	)
 
@@ -147,7 +144,7 @@ func setupDB(b *testing.B) (string, string) {
 		b.Fatalf("Failed to compress data: %v", err)
 	}
 
-	timeout := time.NewTimer(10 * time.Second)
+	timeout := time.NewTimer(30 * time.Second)
 	defer timeout.Stop()
 
 	select {
@@ -158,6 +155,8 @@ func setupDB(b *testing.B) (string, string) {
 	case <-timeout.C:
 		panic("something timeout wrong compressing")
 	}
+
+	slog.Info("compression.end")
 
 	return dbPath, zstPath
 }
@@ -171,16 +170,6 @@ func BenchmarkReadUncompressedSQLite(b *testing.B) {
 		b.Fatalf("Failed to open database: %v", err)
 	}
 	defer client.Close()
-
-	_, err = client.Exec(`
-		pragma temp_store = memory;
-		pragma mmap_size = 268435456; -- 256 MB
-		PRAGMA cache_size = 2000;
-		PRAGMA busy_timeout = 5000;
-	`)
-	if err != nil {
-		b.Fatalf("could not setup pragmas: %v", err)
-	}
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -205,16 +194,6 @@ func BenchmarkReadUncompressedRtreeSQLite(b *testing.B) {
 		b.Fatalf("Failed to open database: %v", err)
 	}
 	defer client.Close()
-
-	_, err = client.Exec(`
-		pragma temp_store = memory;
-		pragma mmap_size = 268435456; -- 256 MB
-		PRAGMA cache_size = 2000;
-		PRAGMA busy_timeout = 5000;
-	`)
-	if err != nil {
-		b.Fatalf("could not setup pragmas: %v", err)
-	}
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -247,16 +226,6 @@ func BenchmarkReadUncompressedSQLiteFTS5Porter(b *testing.B) {
 	}
 	defer client.Close()
 
-	_, err = client.Exec(`
-		pragma temp_store = memory;
-		pragma mmap_size = 268435456; -- 256 MB
-		PRAGMA cache_size = 2000;
-		PRAGMA busy_timeout = 5000;
-	`)
-	if err != nil {
-		b.Fatalf("could not setup pragmas: %v", err)
-	}
-
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
 	b.ResetTimer() // Start timing now.
@@ -264,41 +233,7 @@ func BenchmarkReadUncompressedSQLiteFTS5Porter(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		var count int
 		for pb.Next() {
-			err = client.QueryRow("SELECT COUNT(*) FROM entries_porter WHERE entries_porter MATCH 'alligator'").Scan(&count)
-			if err != nil {
-				b.Fatalf("Query failed: %v", err)
-			}
-		}
-	})
-}
-
-func BenchmarkReadUncompressedSQLiteFTS5Trigram(b *testing.B) {
-	dbPath, _ := setupDB(b)
-
-	client, err := sql.Open("sqlite3", dbPath)
-	if err != nil {
-		b.Fatalf("Failed to open database: %v", err)
-	}
-	defer client.Close()
-
-	_, err = client.Exec(`
-		pragma temp_store = memory;
-		pragma mmap_size = 268435456; -- 256 MB
-		PRAGMA cache_size = 2000;
-		PRAGMA busy_timeout = 5000;
-	`)
-	if err != nil {
-		b.Fatalf("could not setup pragmas: %v", err)
-	}
-
-	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
-
-	b.ResetTimer() // Start timing now.
-
-	b.RunParallel(func(pb *testing.PB) {
-		var count int
-		for pb.Next() {
-			err = client.QueryRow("SELECT COUNT(*) FROM entries_trigram WHERE entries_trigram MATCH 'alligator'").Scan(&count)
+			err = client.QueryRow("SELECT COUNT(*) FROM entries_porter WHERE entries_porter MATCH 'alligator OR work'").Scan(&count)
 			if err != nil {
 				b.Fatalf("Query failed: %v", err)
 			}
@@ -315,16 +250,6 @@ func BenchmarkReadCompressedSQLite(b *testing.B) {
 		b.Fatalf("Failed to open database: %v", err)
 	}
 	defer client.Close()
-
-	_, err = client.Exec(`
-		pragma temp_store = memory;
-		pragma mmap_size = 268435456; -- 256 MB
-		PRAGMA cache_size = 2000;
-		PRAGMA busy_timeout = 5000;
-	`)
-	if err != nil {
-		b.Fatalf("could not setup pragmas: %v", err)
-	}
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -350,16 +275,6 @@ func BenchmarkReadCompressedSQLiteFTS5Porter(b *testing.B) {
 	}
 	defer client.Close()
 
-	_, err = client.Exec(`
-		pragma temp_store = memory;
-		pragma mmap_size = 268435456; -- 256 MB
-		PRAGMA cache_size = 2000;
-		PRAGMA busy_timeout = 5000;
-	`)
-	if err != nil {
-		b.Fatalf("could not setup pragmas: %v", err)
-	}
-
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
 	b.ResetTimer() // Start timing now.
@@ -367,41 +282,7 @@ func BenchmarkReadCompressedSQLiteFTS5Porter(b *testing.B) {
 	b.RunParallel(func(pb *testing.PB) {
 		var count int
 		for pb.Next() {
-			err = client.QueryRow("SELECT COUNT(*) FROM entries_porter WHERE entries_porter MATCH 'alligator'").Scan(&count)
-			if err != nil {
-				b.Fatalf("Query failed: %v", err)
-			}
-		}
-	})
-}
-
-func BenchmarkReadCompressedSQLiteFTS5Trigram(b *testing.B) {
-	_, zstPath := setupDB(b)
-
-	client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
-	if err != nil {
-		b.Fatalf("Failed to open database: %v", err)
-	}
-	defer client.Close()
-
-	_, err = client.Exec(`
-		pragma temp_store = memory;
-		pragma mmap_size = 268435456; -- 256 MB
-		PRAGMA cache_size = 2000;
-		PRAGMA busy_timeout = 5000;
-	`)
-	if err != nil {
-		b.Fatalf("could not setup pragmas: %v", err)
-	}
-
-	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
-
-	b.ResetTimer() // Start timing now.
-
-	b.RunParallel(func(pb *testing.PB) {
-		var count int
-		for pb.Next() {
-			err = client.QueryRow("SELECT COUNT(*) FROM entries_trigram WHERE entries_trigram MATCH 'alligator'").Scan(&count)
+			err = client.QueryRow("SELECT COUNT(*) FROM entries_porter WHERE entries_porter MATCH 'alligator OR work'").Scan(&count)
 			if err != nil {
 				b.Fatalf("Query failed: %v", err)
 			}
@@ -422,16 +303,6 @@ func BenchmarkReadCompressedHTTPSQLite(b *testing.B) {
 		b.Fatalf("Query failed: %v", err)
 	}
 	defer client.Close()
-
-	_, err = client.Exec(`
-		pragma temp_store = memory;
-		pragma mmap_size = 268435456; -- 256 MB
-		PRAGMA cache_size = 2000;
-		PRAGMA busy_timeout = 5000;
-	`)
-	if err != nil {
-		b.Fatalf("could not setup pragmas: %v", err)
-	}
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -456,16 +327,6 @@ func BenchmarkReadCompressedRtreeSQLite(b *testing.B) {
 		b.Fatalf("Failed to open database: %v", err)
 	}
 	defer client.Close()
-
-	_, err = client.Exec(`
-		pragma temp_store = memory;
-		pragma mmap_size = 268435456; -- 256 MB
-		PRAGMA cache_size = 2000;
-		PRAGMA busy_timeout = 5000;
-	`)
-	if err != nil {
-		b.Fatalf("could not setup pragmas: %v", err)
-	}
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 

@@ -8,7 +8,7 @@ require (
 	github.com/brianvoe/gofakeit/v7 v7.0.4
 	github.com/georgysavva/scany/v2 v2.1.3
 	github.com/klauspost/compress v1.17.9
-	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/mattn/go-sqlite3 v1.14.23
 	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2
 	github.com/psanford/sqlite3vfs v0.0.0-20240315230605-24e1d98cf361

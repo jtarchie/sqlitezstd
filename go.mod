@@ -7,7 +7,7 @@ require (
 	github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.7.2
 	github.com/brianvoe/gofakeit/v7 v7.0.4
 	github.com/georgysavva/scany/v2 v2.1.3
-	github.com/klauspost/compress v1.17.9
+	github.com/klauspost/compress v1.17.10
 	github.com/mattn/go-sqlite3 v1.14.23
 	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2

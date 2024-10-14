@@ -4,10 +4,10 @@ go 1.22.5
 
 require (
 	github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.0.0-20240816173256-744d36214f01
-	github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.7.2
+	github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.7.3
 	github.com/brianvoe/gofakeit/v7 v7.0.4
 	github.com/georgysavva/scany/v2 v2.1.3
-	github.com/klauspost/compress v1.17.9
+	github.com/klauspost/compress v1.17.10
 	github.com/mattn/go-sqlite3 v1.14.23
 	github.com/onsi/ginkgo/v2 v2.20.2
 	github.com/onsi/gomega v1.34.2
@@ -30,6 +30,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
 	golang.org/x/sys v0.24.0 // indirect
 	golang.org/x/term v0.23.0 // indirect
 	golang.org/x/text v0.17.0 // indirect

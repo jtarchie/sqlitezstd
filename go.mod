@@ -5,7 +5,7 @@ go 1.22.5
 require (
 	github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.7.3
 	github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.7.3
-	github.com/brianvoe/gofakeit/v7 v7.1.1
+	github.com/brianvoe/gofakeit/v7 v7.1.2
 	github.com/georgysavva/scany/v2 v2.1.3
 	github.com/klauspost/compress v1.17.11
 	github.com/mattn/go-sqlite3 v1.14.24

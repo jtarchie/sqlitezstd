@@ -4,8 +4,8 @@ github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.7.3 h1:FIk3jXkfOv
 github.com/SaveTheRbtz/zstd-seekable-format-go/cmd/zstdseek v0.7.3/go.mod h1:6CDGO3q5dF9tlV1mca3+sjD1x3EWi9LC8wJxTH6O+sI=
 github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.7.3 h1:BP0HiyNT3AQEYi+if3wkRcIdQFHtsw6xX3Kx0glckgA=
 github.com/SaveTheRbtz/zstd-seekable-format-go/pkg v0.7.3/go.mod h1:hMNtySovKkn2gdDuLqnqveP+mfhUSaBdoBcr2I7Zt0E=
-github.com/brianvoe/gofakeit/v7 v7.1.1 h1:/DEG+f/mFtqqNjhZ0AXA0aDzrnfE85AcAKVE+mMdxAQ=
-github.com/brianvoe/gofakeit/v7 v7.1.1/go.mod h1:QXuPeBw164PJCzCUZVmgpgHJ3Llj49jSLVkKPMtxtxA=
+github.com/brianvoe/gofakeit/v7 v7.1.2 h1:vSKaVScNhWVpf1rlyEKSvO8zKZfuDtGqoIHT//iNNb8=
+github.com/brianvoe/gofakeit/v7 v7.1.2/go.mod h1:QXuPeBw164PJCzCUZVmgpgHJ3Llj49jSLVkKPMtxtxA=
 github.com/cespare/xxhash/v2 v2.3.0 h1:UL815xU9SqsFlibzuggzjXhog7bL6oX9BbNZnL2UFvs=
 github.com/cespare/xxhash/v2 v2.3.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/chengxilo/virtualterm v1.0.4 h1:Z6IpERbRVlfB8WkOmtbHiDbBANU7cimRIof7mk9/PwM=

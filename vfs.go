@@ -85,6 +85,14 @@ var once = sync.OnceValue(func() error {
 	return nil
 })
 
+// noop, kept for old interface
 func Init() error {
-	return once()
+	return nil
+}
+
+func init() {
+	err := once()
+	if err != nil {
+		panic(fmt.Sprintf("could not register vfs: %v", err))
+	}
 }

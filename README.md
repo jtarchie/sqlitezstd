@@ -43,13 +43,8 @@ Below is an example of how to use SQLiteZSTD in a Go program:
 
 ```go
 import (
-    sqlitezstd "github.com/jtarchie/sqlitezstd"
+    _ "github.com/jtarchie/sqlitezstd"
 )
-
-initErr := sqlitezstd.Init()
-if initErr != nil {
-    panic(fmt.Sprintf("Failed to initialize SQLiteZSTD: %s", initErr))
-}
 
 db, err := sql.Open("sqlite3", "<path-to-your-file>?vfs=zstd")
 if err != nil {
@@ -78,7 +73,6 @@ if err != nil {
 
 In this Go code example:
 
-- The SQLiteZSTD library is initialized first with `sqlitezstd.Init()`.
 - The `sql.Open()` function takes as a parameter the path to the compressed
   SQLite database, appended with a query string with `vfs=zstd` to use the VFS.
 - Setting the `PRAGMA` ensures that the read only VFS is not used to create

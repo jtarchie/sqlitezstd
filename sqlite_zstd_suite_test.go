@@ -13,7 +13,7 @@ import (
 	"testing"
 
 	"github.com/georgysavva/scany/v2/sqlscan"
-	sqlitezstd "github.com/jtarchie/sqlitezstd"
+	_ "github.com/jtarchie/sqlitezstd"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gexec"
@@ -143,11 +143,6 @@ func createComplexDatabase() (string, string) {
 }
 
 var _ = Describe("SqliteZSTD", func() {
-	BeforeEach(func() {
-		err := sqlitezstd.Init()
-		Expect(err).ToNot(HaveOccurred())
-	})
-
 	It("can read from a compressed sqlite db", func() {
 		zstPath := createDatabase()
 

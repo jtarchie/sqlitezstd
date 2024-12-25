@@ -15,7 +15,7 @@ import (
 	"time"
 
 	"github.com/brianvoe/gofakeit/v7"
-	sqlitezstd "github.com/jtarchie/sqlitezstd"
+	_ "github.com/jtarchie/sqlitezstd"
 	_ "github.com/mattn/go-sqlite3" // ensure you import the SQLite3 driver
 	"github.com/onsi/gomega/gexec"
 )
@@ -42,8 +42,6 @@ func setupDB(b *testing.B) (string, string) {
 	if dbPath != "" {
 		return dbPath, zstPath
 	}
-
-	_ = sqlitezstd.Init()
 
 	buildPath, err := os.MkdirTemp("", "")
 	if err != nil {

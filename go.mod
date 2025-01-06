@@ -9,7 +9,7 @@ require (
 	github.com/georgysavva/scany/v2 v2.1.3
 	github.com/klauspost/compress v1.17.11
 	github.com/mattn/go-sqlite3 v1.14.24
-	github.com/onsi/ginkgo/v2 v2.22.1
+	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
 	github.com/psanford/sqlite3vfs v0.0.0-20240315230605-24e1d98cf361
 	howett.net/ranger v0.0.0-20171016084633-e2e137620847

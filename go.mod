@@ -9,7 +9,7 @@ require (
 	github.com/georgysavva/scany/v2 v2.1.3
 	github.com/klauspost/compress v1.17.11
 	github.com/mattn/go-sqlite3 v1.14.24
-	github.com/onsi/ginkgo/v2 v2.22.1
+	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
 	github.com/psanford/sqlite3vfs v0.0.0-20240315230605-24e1d98cf361
 	howett.net/ranger v0.0.0-20171016084633-e2e137620847
@@ -25,15 +25,15 @@ require (
 	github.com/google/pprof v0.0.0-20241210010833-40e02aabc2ad // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/schollz/progressbar/v3 v3.17.1 // indirect
+	github.com/schollz/progressbar/v3 v3.18.0 // indirect
 	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/net v0.33.0 // indirect
+	golang.org/x/net v0.34.0 // indirect
 	golang.org/x/sync v0.10.0 // indirect
-	golang.org/x/sys v0.28.0 // indirect
-	golang.org/x/term v0.27.0 // indirect
+	golang.org/x/sys v0.29.0 // indirect
+	golang.org/x/term v0.28.0 // indirect
 	golang.org/x/text v0.21.0 // indirect
-	golang.org/x/tools v0.28.0 // indirect
+	golang.org/x/tools v0.29.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )

@@ -11,8 +11,8 @@ import (
 	seekable "github.com/SaveTheRbtz/zstd-seekable-format-go/pkg"
 	"github.com/klauspost/compress/zstd"
 	_ "github.com/mattn/go-sqlite3"
+	"github.com/psanford/httpreadat"
 	"github.com/psanford/sqlite3vfs"
-	"howett.net/ranger"
 )
 
 type ZstdVFS struct{}
@@ -47,9 +47,15 @@ func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File,
 			return nil, 0, sqlite3vfs.CantOpenError
 		}
 
-		reader, err = ranger.NewReader(&ranger.HTTPRanger{URL: uri})
+		httpRanger := httpreadat.New(uri.String())
+		size, err := httpRanger.Size()
 		if err != nil {
 			return nil, 0, sqlite3vfs.CantOpenError
+		}
+
+		reader = &ReadSeeker{
+			ReaderAt: httpRanger,
+			Size:     size,
 		}
 	} else {
 		reader, err = os.Open(name)

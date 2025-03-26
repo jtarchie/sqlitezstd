@@ -48,7 +48,7 @@ func createDatabase() string {
 
 	stmt, err := tx.Prepare("INSERT INTO entries (id) VALUES (?)")
 	Expect(err).ToNot(HaveOccurred())
-	defer stmt.Close()
+	defer stmt.Close() //nolint: errcheck
 
 	for id := 1; id <= maxSize; id++ {
 		_, err = stmt.Exec(id)
@@ -81,7 +81,7 @@ func createComplexDatabase() (string, string) {
 
 	client, err := sql.Open("sqlite3", dbPath)
 	Expect(err).ToNot(HaveOccurred())
-	defer client.Close()
+	defer client.Close() //nolint: errcheck
 
 	_, err = client.Exec(`
 		CREATE TABLE users (
@@ -105,11 +105,11 @@ func createComplexDatabase() (string, string) {
 
 	userStmt, err := tx.Prepare("INSERT INTO users (name, age) VALUES (?, ?)")
 	Expect(err).ToNot(HaveOccurred())
-	defer userStmt.Close()
+	defer userStmt.Close() //nolint: errcheck
 
 	orderStmt, err := tx.Prepare("INSERT INTO orders (user_id, product, quantity) VALUES (?, ?, ?)")
 	Expect(err).ToNot(HaveOccurred())
-	defer orderStmt.Close()
+	defer orderStmt.Close() //nolint: errcheck
 
 	for i := 1; i <= maxSize; i++ {
 		_, err = userStmt.Exec(fmt.Sprintf("User%d", i), 20+(i%60))
@@ -148,7 +148,7 @@ var _ = Describe("SqliteZSTD", func() {
 
 		client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
 		Expect(err).ToNot(HaveOccurred())
-		defer client.Close()
+		defer client.Close() //nolint: errcheck
 
 		row := client.QueryRow("SELECT COUNT(*) FROM entries;")
 		Expect(row.Err()).ToNot(HaveOccurred())
@@ -173,7 +173,7 @@ var _ = Describe("SqliteZSTD", func() {
 
 				client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
 				Expect(err).ToNot(HaveOccurred())
-				defer client.Close()
+				defer client.Close() //nolint: errcheck
 
 				for range 1_000 {
 					row := client.QueryRow("SELECT * FROM entries ORDER BY RANDOM() LIMIT 1;")
@@ -189,7 +189,7 @@ var _ = Describe("SqliteZSTD", func() {
 		It("returns an error", func() {
 			client, err := sql.Open("sqlite3", "file:some.db?vfs=zstd")
 			Expect(err).ToNot(HaveOccurred())
-			defer client.Close()
+			defer client.Close() //nolint: errcheck
 
 			row := client.QueryRow("SELECT * FROM entries ORDER BY RANDOM() LIMIT 1;")
 			Expect(row.Err()).To(HaveOccurred())
@@ -204,7 +204,7 @@ var _ = Describe("SqliteZSTD", func() {
 
 		client, err := sql.Open("sqlite3", fmt.Sprintf("%s/%s?vfs=zstd", server.URL, filepath.Base(zstPath)))
 		Expect(err).ToNot(HaveOccurred())
-		defer client.Close()
+		defer client.Close() //nolint: errcheck
 
 		row := client.QueryRow("SELECT COUNT(*) FROM entries;")
 		Expect(row.Err()).ToNot(HaveOccurred())
@@ -220,11 +220,11 @@ var _ = Describe("SqliteZSTD", func() {
 
 		uncompressedDB, err := sql.Open("sqlite3", uncompressedPath)
 		Expect(err).ToNot(HaveOccurred())
-		defer uncompressedDB.Close()
+		defer uncompressedDB.Close() //nolint: errcheck
 
 		compressedDB, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", compressedPath))
 		Expect(err).ToNot(HaveOccurred())
-		defer compressedDB.Close()
+		defer compressedDB.Close() //nolint: errcheck
 
 		row := compressedDB.QueryRow(`SELECT COUNT(*) FROM users;`)
 		Expect(row.Err()).ToNot(HaveOccurred())

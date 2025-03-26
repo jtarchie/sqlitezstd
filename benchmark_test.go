@@ -88,7 +88,7 @@ func setupDB(b *testing.B) (string, string) {
 	if err != nil {
 		b.Fatalf("Failed to entry prepare: %v", err)
 	}
-	defer insertEntry.Close()
+	defer insertEntry.Close() //nolint: errcheck
 
 	slog.Info("insert.start")
 
@@ -167,7 +167,7 @@ func BenchmarkReadUncompressedSQLite(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to open database: %v", err)
 	}
-	defer client.Close()
+	defer client.Close() //nolint: errcheck
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -191,7 +191,7 @@ func BenchmarkReadUncompressedRtreeSQLite(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to open database: %v", err)
 	}
-	defer client.Close()
+	defer client.Close() //nolint: errcheck
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -222,7 +222,7 @@ func BenchmarkReadUncompressedSQLiteFTS5Porter(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to open database: %v", err)
 	}
-	defer client.Close()
+	defer client.Close() //nolint: errcheck
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -247,7 +247,7 @@ func BenchmarkReadCompressedSQLite(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to open database: %v", err)
 	}
-	defer client.Close()
+	defer client.Close() //nolint: errcheck
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -271,7 +271,7 @@ func BenchmarkReadCompressedSQLiteFTS5Porter(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to open database: %v", err)
 	}
-	defer client.Close()
+	defer client.Close() //nolint: errcheck
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -300,7 +300,7 @@ func BenchmarkReadCompressedHTTPSQLite(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Query failed: %v", err)
 	}
-	defer client.Close()
+	defer client.Close() //nolint: errcheck
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 
@@ -324,7 +324,7 @@ func BenchmarkReadCompressedRtreeSQLite(b *testing.B) {
 	if err != nil {
 		b.Fatalf("Failed to open database: %v", err)
 	}
-	defer client.Close()
+	defer client.Close() //nolint: errcheck
 
 	client.SetMaxOpenConns(max(4, runtime.NumCPU()))
 

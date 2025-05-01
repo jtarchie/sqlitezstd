@@ -19,6 +19,8 @@ jobs:
     - uses: golangci/golangci-lint-action@v7
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
+    - name: go mod download
+      run: go mod download
     - name: Install Task
       uses: arduino/setup-task@v2
       with:

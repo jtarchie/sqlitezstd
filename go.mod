@@ -8,9 +8,9 @@ require (
 	github.com/brianvoe/gofakeit/v7 v7.3.0
 	github.com/georgysavva/scany/v2 v2.1.4
 	github.com/klauspost/compress v1.18.0
-	github.com/mattn/go-sqlite3 v1.14.28
+	github.com/mattn/go-sqlite3 v1.14.30
 	github.com/onsi/ginkgo/v2 v2.23.4
-	github.com/onsi/gomega v1.37.0
+	github.com/onsi/gomega v1.38.0
 	github.com/psanford/httpreadat v0.1.0
 	github.com/psanford/sqlite3vfs v0.0.0-20240315230605-24e1d98cf361
 )

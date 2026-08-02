@@ -62,12 +62,15 @@ func (t *retryTransport) RoundTrip(req *http.Request) (*http.Response, error) {
 			_ = resp.Body.Close()
 			lastErr = fmt.Errorf("sqlitezstd: http %s for %s", resp.Status, req.URL.Redacted())
 		case req.Header.Get("Range") != "" && resp.StatusCode == http.StatusOK:
-			// The server ignored the Range header and is returning the full
-			// body; serving these bytes as frame data would be silent
-			// corruption. This is not transient, so fail immediately.
+			// The server returned the full body instead of the requested
+			// range. Serving these bytes as frame data would be silent
+			// corruption, so the 200 body is always discarded. This can be
+			// transient: a CDN in front of the origin (e.g. Cloudflare/R2)
+			// occasionally answers a valid range request with a full 200,
+			// while retries return 206. Treat it as retryable and only give
+			// up — with a clear message — after maxRetries is exhausted.
 			_ = resp.Body.Close()
-
-			return nil, fmt.Errorf("sqlitezstd: server ignored Range header (got %s, want 206 Partial Content) for %s",
+			lastErr = fmt.Errorf("sqlitezstd: server ignored Range header (got %s, want 206 Partial Content) for %s",
 				resp.Status, req.URL.Redacted())
 		default:
 			return resp, nil

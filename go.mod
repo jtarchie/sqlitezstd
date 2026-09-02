@@ -35,4 +35,4 @@ require (
 // #21 stops a failed open from closing an unrelated live file (observed in
 // production as hours of "SQL logic error" / fts5 corruption reports against
 // an intact database). Drop this and bump the require above once both merge.
-replace github.com/psanford/sqlite3vfs => github.com/jtarchie/sqlite3vfs v0.0.0-20260902014220-2e6ef4129d68
+replace github.com/psanford/sqlite3vfs => github.com/jtarchie/sqlite3vfs v0.0.0-20260902025759-f3d396eb1602

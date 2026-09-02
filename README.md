@@ -62,29 +62,24 @@ db, err := sql.Open("sqlite3", "<path-to-your-file>?vfs=zstd")
 if err != nil {
     panic(fmt.Sprintf("Failed to open database: %s", err))
 }
-
-conn, err := db.Conn(context.Background())
-if err != nil {
-    panic(fmt.Sprintf("Failed to get connection: %s", err))
-}
-defer conn.Close()
-
-// PRAGMAs are not persisted across `database/sql` pooled connections;
-// this ensures the setting applies to the connection you query on.
-_, err = conn.ExecContext(context.Background(), `PRAGMA temp_store = memory;`)
-if err != nil {
-    panic(fmt.Sprintf("Failed to set PRAGMA: %s", err))
-}
-
-// Use conn for subsequent operations to ensure PRAGMA is applied
 ```
 
 In this Go code example:
 
 - The `sql.Open()` function takes as a parameter the path to the compressed
   SQLite database, appended with a query string with `vfs=zstd` to use the VFS.
-- `PRAGMA temp_store = memory` ensures the read-only VFS is not asked to create
-  temporary files on disk (which it cannot do).
+
+### Temporary files
+
+Only the main database is read through this VFS. Anything else SQLite asks for
+— above all the temp file a sorter or a transient index spills into — is handed
+to the VFS underneath, which can create files. So a query that has to spill
+works without any PRAGMA.
+
+`PRAGMA temp_store = memory` used to be required for exactly this reason: a
+read-only VFS cannot create a temp file, and a spilling query failed outright
+with `unable to open database file`. It is now a performance choice like it is
+anywhere else, not a condition of using this package.
 
 ### Connections and concurrency
 

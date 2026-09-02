@@ -226,8 +226,8 @@ var _ = Describe("SqliteZSTD", func() {
 		Expect(count).To(BeEquivalentTo(maxSize))
 
 		query := `
-		  -- since VFS is read-only, it can not be used for files
-			-- please use this
+			-- No longer required -- temp files go to the VFS underneath this
+			-- one -- but kept so both databases sort the same way.
 			PRAGMA temp_store = memory;
 			SELECT u.age, COUNT(*) as order_count, SUM(o.quantity) as total_quantity
 			FROM users u
@@ -256,6 +256,41 @@ var _ = Describe("SqliteZSTD", func() {
 		for i := range uncompressedResults {
 			Expect(compressedResults[i]).To(Equal(uncompressedResults[i]), "Row %d does not match between compressed and uncompressed databases", i)
 		}
+	})
+
+	It("runs a query that spills to a temp file", func() {
+		zstPath := createDatabase()
+
+		client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
+		Expect(err).ToNot(HaveOccurred())
+		defer client.Close() //nolint: errcheck
+
+		// One connection, so the PRAGMAs apply to the one the query runs on.
+		client.SetMaxOpenConns(1)
+
+		// temp_store = FILE is the case that used to be impossible: the sorter
+		// asks this VFS for a temp file, which it cannot create, so the open
+		// went to the VFS underneath instead. A tiny page cache is what makes
+		// the sort spill rather than stay in memory.
+		_, err = client.Exec(`PRAGMA temp_store = FILE;`)
+		Expect(err).ToNot(HaveOccurred())
+
+		_, err = client.Exec(`PRAGMA cache_size = -16;`)
+		Expect(err).ToNot(HaveOccurred())
+
+		// Grouping and ordering by an expression rather than the primary key,
+		// so sqlite has to sort every row instead of walking an index. No
+		// LIMIT: a bounded sort is a top-N that never reaches a temp file.
+		row := client.QueryRow(`
+			SELECT COUNT(*) FROM (
+				SELECT (id * 7) % 1000003 AS bucket, COUNT(*) AS n
+				FROM entries GROUP BY bucket ORDER BY n, bucket
+			)`)
+		Expect(row.Err()).ToNot(HaveOccurred())
+
+		var groups int64
+		Expect(row.Scan(&groups)).ToNot(HaveOccurred())
+		Expect(groups).To(BeNumerically(">", 0))
 	})
 
 	It("uses HTTP Range headers and only downloads needed bytes", func() {

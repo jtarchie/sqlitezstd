@@ -35,6 +35,16 @@ var sharedDecoder = sync.OnceValues(func() (*zstd.Decoder, error) {
 	return zstd.NewReader(nil)
 })
 
+// baseVFS is the VFS sqlite was already using -- the platform's own -- resolved
+// once, lazily, since it is registered long before any database is opened. It
+// is where Open sends the files this VFS cannot serve. Nil only if sqlite has
+// no default VFS at all, which cannot happen in a linked-in build.
+//
+// nolint: gochecknoglobals
+var baseVFS = sync.OnceValue(func() sqlite3vfs.VFS {
+	return sqlite3vfs.VFSFind("")
+})
+
 // Register registers a zstd VFS under the given name with the supplied options.
 // Open a database against it with the "?vfs=<name>" query parameter. The default
 // "zstd" VFS (registered automatically on import) uses default options.
@@ -75,6 +85,18 @@ func (z *ZstdVFS) FullPathname(name string) string {
 }
 
 func (z *ZstdVFS) Open(name string, flags sqlite3vfs.OpenFlag) (sqlite3vfs.File, sqlite3vfs.OpenFlag, error) {
+	// Only the main database is a zstd archive. Everything else sqlite asks
+	// this VFS for goes to the one underneath, which can create files -- above
+	// all the temp file a sorter or a transient index spills into. Failing that
+	// open used to fail the whole query with "unable to open database file",
+	// and the only workaround was requiring PRAGMA temp_store = memory of every
+	// caller. sqlite's own appendvfs diverts the same set.
+	if flags&sqlite3vfs.OpenMainDB == 0 {
+		if base := baseVFS(); base != nil {
+			return base.Open(name, flags)
+		}
+	}
+
 	file, err := z.open(name)
 	if err != nil {
 		// sqlite3vfs can only return fixed sentinel errors, so log the real

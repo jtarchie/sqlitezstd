@@ -293,6 +293,40 @@ var _ = Describe("SqliteZSTD", func() {
 		Expect(groups).To(BeNumerically(">", 0))
 	})
 
+	It("survives a failed open of another database", func() {
+		_, zstPath := createComplexDatabase()
+
+		client, err := sql.Open("sqlite3", fmt.Sprintf("%s?vfs=zstd", zstPath))
+		Expect(err).ToNot(HaveOccurred())
+		defer client.Close() //nolint: errcheck
+
+		// One connection with a tiny page cache, so the query after the failed
+		// open has to fault pages in through the VFS rather than answer from
+		// cache -- which is exactly the read that used to break.
+		client.SetMaxOpenConns(1)
+		_, err = client.Exec(`PRAGMA cache_size = -16;`)
+		Expect(err).ToNot(HaveOccurred())
+
+		var users int64
+		Expect(client.QueryRow(`SELECT COUNT(*) FROM users`).Scan(&users)).To(Succeed())
+		Expect(users).To(BeEquivalentTo(maxSize))
+
+		// A failed open used to close the FIRST file opened through the VFS --
+		// the healthy connection above -- because sqlite calls xClose on a
+		// failed open and the unregistered file's zero id aliased it. The
+		// connection then failed every uncached read with "SQL logic error".
+		missing, err := sql.Open("sqlite3", fmt.Sprintf("%s.does-not-exist?vfs=zstd", zstPath))
+		Expect(err).ToNot(HaveOccurred())
+		Expect(missing.Ping()).ToNot(Succeed())
+		Expect(missing.Close()).To(Succeed())
+
+		// orders has not been touched, so counting it needs reads the cache
+		// cannot answer.
+		var orders int64
+		Expect(client.QueryRow(`SELECT COUNT(*) FROM orders`).Scan(&orders)).To(Succeed())
+		Expect(orders).To(BeEquivalentTo(maxSize))
+	})
+
 	It("uses HTTP Range headers and only downloads needed bytes", func() {
 		zstPath := createDatabase()
 		zstDir := filepath.Dir(zstPath)

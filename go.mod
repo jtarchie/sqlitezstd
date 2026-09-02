@@ -30,7 +30,9 @@ require (
 	golang.org/x/tools v0.48.0 // indirect
 )
 
-// Temporary, until psanford/sqlite3vfs#20 lands: VFSFind is what lets Open
-// hand temp files to the VFS underneath this one. Drop this and bump the
-// require above once it is merged.
-replace github.com/psanford/sqlite3vfs => github.com/jtarchie/sqlite3vfs v0.0.0-20260902013157-51dbe68d213c
+// Temporary, until psanford/sqlite3vfs#20 and #21 land. #20 adds VFSFind,
+// which is what lets Open hand temp files to the VFS underneath this one.
+// #21 stops a failed open from closing an unrelated live file (observed in
+// production as hours of "SQL logic error" / fts5 corruption reports against
+// an intact database). Drop this and bump the require above once both merge.
+replace github.com/psanford/sqlite3vfs => github.com/jtarchie/sqlite3vfs v0.0.0-20260902014220-2e6ef4129d68
